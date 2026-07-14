@@ -25,6 +25,8 @@
     --red-soft:#FBE3E7;
     --green:#2D9C6C;
     --green-soft:#D4F4E7;
+    --orange:#D17A3E;
+    --orange-soft:#FBF0E4;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
@@ -189,9 +191,7 @@
     color:var(--ink);
     width:100%;
   }
-  select{
-    cursor:pointer;
-  }
+  select{ cursor:pointer; }
   input:focus, select:focus, .tab:focus-visible, .btn:focus-visible, .icon-btn:focus-visible{
     outline:2px solid var(--blue); outline-offset:2px;
   }
@@ -215,6 +215,12 @@
   .btn-gold:hover{ filter:brightness(1.15); }
   .btn-ghost{ background:var(--sky-tint); border-color:var(--line); color:var(--ink); }
   .btn-ghost:hover{ background:var(--blue-soft); }
+  .btn-undo{ background:var(--orange-soft); border-color:var(--orange); color:var(--orange); }
+  .btn-undo:hover{ background:var(--orange); color:#fff; }
+  .btn-undo:disabled{ opacity:0.38; cursor:not-allowed; filter:none; transform:none; }
+  .btn-redo{ background:var(--green-soft); border-color:var(--green); color:var(--green); }
+  .btn-redo:hover{ background:var(--green); color:#fff; }
+  .btn-redo:disabled{ opacity:0.38; cursor:not-allowed; filter:none; transform:none; }
 
   table{ width:100%; border-collapse:collapse; margin-top:6px; }
   thead th{
@@ -237,14 +243,32 @@
 
   .empty-note{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--ink-muted); padding:20px 0; }
 
+  /* ---------- ROLLCALL ROW ---------- */
   .rollcall-row{
     display:flex; align-items:center; justify-content:space-between;
-    padding:11px 2px; border-bottom:1px solid var(--line);
+    padding:12px 4px; border-bottom:1px solid var(--line);
     gap:14px; flex-wrap:wrap;
+    transition: background .15s ease;
   }
   .rollcall-row:last-child{ border-bottom:none; }
-  .rollcall-name{ font-size:14.5px; }
-  .rollcall-name .roll{ font-family:'JetBrains Mono',monospace; color:var(--ink-muted); font-size:12px; margin-right:8px; }
+  .rollcall-row.changed{
+    background: var(--orange-soft);
+    border-left: 3px solid var(--orange);
+    padding-left: 10px;
+  }
+  .rollcall-name{ font-size:14.5px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .rollcall-name .roll{ font-family:'JetBrains Mono',monospace; color:var(--ink-muted); font-size:12px; }
+  .changed-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    background:var(--orange);
+    color:#fff;
+    padding:2px 6px;
+    border-radius:4px;
+    display:none;
+  }
+  .rollcall-row.changed .changed-badge{ display:inline; }
+
   .toggle-group{ display:flex; gap:6px; }
   .toggle{
     font-family:'JetBrains Mono',monospace;
@@ -255,6 +279,7 @@
     background:var(--sky);
     cursor:pointer;
     color:var(--ink-muted);
+    transition: all .12s ease;
   }
   .toggle.present.active{ background:var(--blue); border-color:var(--blue); color:#fff; }
   .toggle.absent.active{ background:var(--red); border-color:var(--red); color:#fff; }
@@ -298,8 +323,6 @@
   .history-entry .hist-name.present{ color:var(--blue-dark); }
   .history-entry .hist-name.absent{ color:var(--red); }
 
-  .code-note{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-muted); margin:10px 0 18px; line-height:1.6; }
-
   footer.appfoot{
     text-align:center; padding:18px 10px 8px; font-family:'JetBrains Mono',monospace;
     font-size:11.5px; color:var(--ink-muted);
@@ -308,14 +331,6 @@
   .panel{ display:none; }
   .panel.active{ display:block; animation:fade .2s ease; }
   @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
-
-  .search-controls{
-    display:flex;
-    gap:10px;
-    margin-bottom:16px;
-    align-items:flex-end;
-    flex-wrap:wrap;
-  }
 
   .highlight-row{
     background:var(--blue-soft) !important;
@@ -366,6 +381,60 @@
     gap:8px;
   }
 
+  /* ---------- UNDO/REDO TOOLBAR ---------- */
+  .undo-redo-bar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    padding:12px 14px;
+    background:var(--sky-tint);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:16px;
+  }
+  .undo-redo-bar .ur-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--ink-muted);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-right:4px;
+  }
+  .stack-counter{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:6px;
+    background:var(--sky-card);
+    border:1px solid var(--line);
+    color:var(--ink-muted);
+    margin-left:auto;
+  }
+  .ur-hint{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--ink-muted);
+    padding:6px 10px;
+    background:var(--sky-card);
+    border:1px solid var(--line);
+    border-radius:7px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:260px;
+  }
+
+  .action-bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:18px;
+    align-items:center;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+
   @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
 
   @media (max-width:860px){
@@ -379,6 +448,7 @@
     .sidebar-foot{ display:none; }
     .content{ padding:20px 18px 32px; }
     .topbar{ padding:18px 18px 12px; }
+    .ur-hint{ display:none; }
   }
 </style>
 </head>
@@ -439,15 +509,14 @@
         <div class="alert-box">
           ⚠️ Both Roll Number AND Registration Number are required for search
         </div>
-        
         <div class="field-row">
           <div class="field">
             <label for="adv-search-roll">Roll Number <span class="required">*</span></label>
-            <input type="number" id="adv-search-roll" placeholder="e.g. 5" required>
+            <input type="number" id="adv-search-roll" placeholder="e.g. 5">
           </div>
           <div class="field">
             <label for="adv-search-regid">Registration Number (6 digits) <span class="required">*</span></label>
-            <input type="text" id="adv-search-regid" placeholder="e.g. 124126" maxlength="6" required>
+            <input type="text" id="adv-search-regid" placeholder="e.g. 124126" maxlength="6">
           </div>
           <div class="field" style="display:flex; align-items:flex-end; gap:8px;">
             <button class="btn btn-gold" id="adv-search-btn" type="button">🔍 Search</button>
@@ -456,7 +525,6 @@
         </div>
         <div class="helper-text">Both fields must be filled and must match the same student record.</div>
       </div>
-
       <div class="card">
         <h2 class="section-title">Search Results <small id="search-result-count">0 FOUND</small></h2>
         <div id="search-results-wrap"></div>
@@ -465,6 +533,8 @@
 
     <!-- TAKE ATTENDANCE -->
     <div class="panel" id="panel-attendance">
+
+      <!-- Date Picker -->
       <div class="card">
         <div class="date-picker-wrap">
           <div class="field" style="max-width:220px;">
@@ -478,11 +548,30 @@
         </div>
       </div>
 
+      <!-- Undo / Redo toolbar -->
+      <div class="card">
+        <h2 class="section-title">Undo / Redo</h2>
+        <div class="undo-redo-bar">
+          <span class="ur-label">History</span>
+          <button class="btn btn-undo" id="undo-btn" type="button" disabled>↩ Undo</button>
+          <button class="btn btn-redo" id="redo-btn" type="button" disabled>↪ Redo</button>
+          <span class="ur-hint" id="ur-hint">No changes made yet</span>
+          <span class="stack-counter" id="stack-counter">Undo: 0 &nbsp;|&nbsp; Redo: 0</span>
+        </div>
+      </div>
+
+      <!-- Roll Call -->
       <div class="card">
         <h2 class="section-title">Mark Attendance</h2>
         <div id="attendance-list"></div>
-        <button class="btn btn-gold" id="submit-attendance-btn" type="button" style="margin-top:16px;">Submit Attendance</button>
+        <div class="action-bar">
+          <button class="btn btn-gold" id="submit-attendance-btn" type="button">Submit Attendance</button>
+          <button class="btn btn-ghost" id="mark-all-present-btn" type="button">✓ All Present</button>
+          <button class="btn btn-ghost" id="mark-all-absent-btn" type="button">✗ All Absent</button>
+          <button class="btn btn-ghost" id="reset-attendance-btn" type="button">↺ Reset</button>
+        </div>
       </div>
+
     </div>
 
     <!-- RANKING -->
@@ -490,7 +579,7 @@
       <div class="card">
         <h2 class="section-title">Student Rankings</h2>
         <div class="sort-controls">
-          <label style="margin:0; text-transform:none; font-family:'Inter',sans-serif; font-size:13px; color:var(--purple); font-weight:600;">Sort By:</label>
+          <label style="margin:0;text-transform:none;font-family:'Inter',sans-serif;font-size:13px;color:var(--purple);font-weight:600;">Sort By:</label>
           <button class="btn active" data-sort="attendance-desc" type="button">Attendance % ↓</button>
           <button class="btn" data-sort="attendance-asc" type="button">Attendance % ↑</button>
           <button class="btn" data-sort="name-asc" type="button">Name A-Z</button>
@@ -518,7 +607,6 @@
           <button class="btn btn-ghost" id="history-all-btn" type="button">Show All</button>
         </div>
       </div>
-
       <div class="card">
         <h2 class="section-title">Attendance History <small id="history-count-display">SHOWING ALL</small></h2>
         <div id="history-list-wrap"></div>
@@ -531,12 +619,10 @@
         <h2 class="section-title">Class Summary</h2>
         <div id="report-summary-wrap"></div>
       </div>
-
       <div class="card">
         <h2 class="section-title">Students Below 75%</h2>
         <div id="report-defaulters-wrap"></div>
       </div>
-
       <div class="card">
         <h2 class="section-title">Backup &amp; Restore</h2>
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
@@ -557,103 +643,67 @@
 
 <script>
 // =====================================================================
-// DSA CORE — Enhanced Attendance System
+// DSA CORE
 // =====================================================================
 
 class StudentNode {
   constructor(roll, name, regId){
-    this.roll = roll;
-    this.name = name;
-    this.regId = regId;
+    this.roll   = roll;
+    this.name   = name;
+    this.regId  = regId;
     this.present = 0;
-    this.total = 0;
-    this.next = null;
+    this.total   = 0;
+    this.next    = null;
   }
   get percentage(){
-    if (this.total === 0) return 0;
-    return (this.present * 100) / this.total;
+    return this.total === 0 ? 0 : (this.present * 100) / this.total;
   }
 }
 
 class AttendanceSystem {
   constructor(){
-    this.head = null;
-    this.rollIndex = new Map();
+    this.head       = null;
+    this.rollIndex  = new Map();
     this.regIdIndex = new Map();
-    this.history = [];
-    this.nextRoll = 1;
+    this.history    = [];
+    this.nextRoll   = 1;
   }
 
   addStudent(name, regId){
-    // Validate 6-digit registration number
-    if (!/^\d{6}$/.test(regId)) {
+    if (!/^\d{6}$/.test(regId))
       return { ok:false, msg:'Registration number must be exactly 6 digits.' };
-    }
-    
-    if (this.regIdIndex.has(regId)){
+    if (this.regIdIndex.has(regId))
       return { ok:false, msg:`Registration number ${regId} already exists.` };
-    }
-    
+
     const roll = this.nextRoll++;
     const node = new StudentNode(roll, name, regId);
-    
-    // Insert in sorted order by roll number (1 to n)
-    if (!this.head || this.head.roll > roll) {
-      node.next = this.head;
-      this.head = node;
+
+    if (!this.head || this.head.roll > roll){
+      node.next = this.head; this.head = node;
     } else {
-      let curr = this.head;
-      while (curr.next && curr.next.roll < roll) {
-        curr = curr.next;
-      }
-      node.next = curr.next;
-      curr.next = node;
+      let c = this.head;
+      while (c.next && c.next.roll < roll) c = c.next;
+      node.next = c.next; c.next = node;
     }
-    
     this.rollIndex.set(roll, node);
     this.regIdIndex.set(regId, node);
     return { ok:true, msg:`${name} (Roll ${roll}) added with Reg No. ${regId}.`, roll };
   }
 
-  searchStudent(roll){
-    return this.rollIndex.get(roll) || null;
-  }
+  searchStudent(roll)       { return this.rollIndex.get(roll)   || null; }
+  searchByRegId(regId)      { return this.regIdIndex.get(regId) || null; }
 
-  searchByRegId(regId){
-    return this.regIdIndex.get(regId) || null;
-  }
-
-  // Strict search - BOTH roll and regId must be provided AND must match
   strictSearch(roll, regId){
-    // Both parameters are required
-    if (!roll || !regId) {
-      return { success: false, student: null, message: 'Both Roll Number and Registration Number are required.' };
-    }
-
-    // Validate 6-digit registration number
-    if (!/^\d{6}$/.test(regId)) {
-      return { success: false, student: null, message: 'Registration number must be exactly 6 digits.' };
-    }
-
-    // Search by roll number
-    const studentByRoll = this.searchStudent(roll);
-    
-    // If student not found by roll
-    if (!studentByRoll) {
-      return { success: false, student: null, message: `No student found with Roll Number ${roll}.` };
-    }
-
-    // Check if the registration number matches
-    if (studentByRoll.regId !== regId) {
-      return { 
-        success: false, 
-        student: null, 
-        message: `Roll Number ${roll} does not match Registration Number ${regId}. Please check both values.` 
-      };
-    }
-
-    // Both match - return success
-    return { success: true, student: studentByRoll, message: 'Student found successfully!' };
+    if (!roll || !regId)
+      return { success:false, student:null, message:'Both Roll Number and Registration Number are required.' };
+    if (!/^\d{6}$/.test(regId))
+      return { success:false, student:null, message:'Registration number must be exactly 6 digits.' };
+    const s = this.searchStudent(roll);
+    if (!s)
+      return { success:false, student:null, message:`No student found with Roll Number ${roll}.` };
+    if (s.regId !== regId)
+      return { success:false, student:null, message:`Roll Number ${roll} does not match Registration Number ${regId}. Please check both values.` };
+    return { success:true, student:s, message:'Student found successfully!' };
   }
 
   deleteStudent(roll){
@@ -668,352 +718,419 @@ class AttendanceSystem {
   }
 
   toArray(){
-    const out = [];
-    let curr = this.head;
-    while (curr){ out.push(curr); curr = curr.next; }
+    const out = []; let c = this.head;
+    while (c){ out.push(c); c = c.next; }
     return out;
   }
 
-  getStudentCount(){
-    return this.rollIndex.size;
-  }
-
-  // Enhanced sorting with multiple criteria
   sortStudents(sortBy){
     const arr = this.toArray();
-    
-    const compareFunctions = {
-      'attendance-desc': (a, b) => b.percentage - a.percentage,
-      'attendance-asc': (a, b) => a.percentage - b.percentage,
-      'name-asc': (a, b) => a.name.localeCompare(b.name),
-      'name-desc': (a, b) => b.name.localeCompare(a.name),
-      'roll-asc': (a, b) => a.roll - b.roll,
-      'roll-desc': (a, b) => b.roll - a.roll
+    const fns = {
+      'attendance-desc': (a,b) => b.percentage - a.percentage,
+      'attendance-asc':  (a,b) => a.percentage - b.percentage,
+      'name-asc':        (a,b) => a.name.localeCompare(b.name),
+      'name-desc':       (a,b) => b.name.localeCompare(a.name),
+      'roll-asc':        (a,b) => a.roll - b.roll,
+      'roll-desc':       (a,b) => b.roll - a.roll,
     };
-
-    const compareFunc = compareFunctions[sortBy] || compareFunctions['attendance-desc'];
-
-    // Using merge sort
-    const merge = (left, right) => {
-      const res = [];
-      let i = 0, j = 0;
-      while (i < left.length && j < right.length){
-        res.push(compareFunc(left[i], right[j]) <= 0 ? left[i++] : right[j++]);
-      }
-      return res.concat(left.slice(i)).concat(right.slice(j));
+    const fn = fns[sortBy] || fns['attendance-desc'];
+    const merge = (l,r) => {
+      const res=[]; let i=0,j=0;
+      while(i<l.length && j<r.length) res.push(fn(l[i],r[j])<=0 ? l[i++] : r[j++]);
+      return res.concat(l.slice(i)).concat(r.slice(j));
     };
-    
-    const mergeSort = (list) => {
-      if (list.length <= 1) return list;
-      const mid = Math.floor(list.length / 2);
-      return merge(mergeSort(list.slice(0, mid)), mergeSort(list.slice(mid)));
+    const ms = list => {
+      if(list.length<=1) return list;
+      const m = Math.floor(list.length/2);
+      return merge(ms(list.slice(0,m)), ms(list.slice(m)));
     };
-    
-    return mergeSort(arr);
+    return ms(arr);
   }
 
-  defaulters(threshold = 75){
-    return this.toArray().filter(s => s.total > 0 && s.percentage < threshold);
-  }
+  defaulters(t=75){ return this.toArray().filter(s=>s.total>0 && s.percentage<t); }
 
-  // Filter history by date range
-  getHistoryByDateRange(startDate, endDate){
-    if(!startDate && !endDate) return this.history;
-    
-    return this.history.filter(session => {
-      const sessionDate = new Date(session.dateObj);
-      if(startDate && sessionDate < new Date(startDate)) return false;
-      if(endDate){
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59);
-        if(sessionDate > end) return false;
-      }
+  getHistoryByDateRange(start, end){
+    if(!start && !end) return this.history;
+    return this.history.filter(s=>{
+      const d = new Date(s.dateObj);
+      if(start && d < new Date(start)) return false;
+      if(end){ const e=new Date(end); e.setHours(23,59,59); if(d>e) return false; }
       return true;
     });
   }
 }
 
+// =====================================================================
+// UNDO / REDO ENGINE  (stack-based — each element = full state snapshot)
+// =====================================================================
+
+class UndoRedoManager {
+  constructor(){
+    this.undoStack = [];   // stack of past states
+    this.redoStack = [];   // stack of future states (after undo)
+    this.current   = null; // the live state reference
+  }
+
+  // Call this once when the roll-call is first rendered
+  init(stateSnapshot){
+    this.undoStack = [];
+    this.redoStack = [];
+    this.current   = this._clone(stateSnapshot);
+  }
+
+  // Call this every time the teacher flips a toggle
+  push(newState, description){
+    this.undoStack.push({ state: this._clone(this.current), desc: description });
+    this.redoStack = [];                       // clear redo on new action
+    this.current   = this._clone(newState);
+  }
+
+  undo(){
+    if(!this.canUndo()) return null;
+    const top = this.undoStack.pop();
+    this.redoStack.push({ state: this._clone(this.current), desc: top.desc });
+    this.current = this._clone(top.state);
+    return { state: this.current, desc: top.desc };
+  }
+
+  redo(){
+    if(!this.canRedo()) return null;
+    const top = this.redoStack.pop();
+    this.undoStack.push({ state: this._clone(this.current), desc: top.desc });
+    this.current = this._clone(top.state);
+    return { state: this.current, desc: top.desc };
+  }
+
+  canUndo(){ return this.undoStack.length > 0; }
+  canRedo(){ return this.redoStack.length > 0; }
+
+  peekUndoDesc(){
+    if(!this.canUndo()) return null;
+    return this.undoStack[this.undoStack.length-1].desc;
+  }
+  peekRedoDesc(){
+    if(!this.canRedo()) return null;
+    return this.redoStack[this.redoStack.length-1].desc;
+  }
+
+  // Deep-clone a plain {roll -> 'present'|'absent'} map
+  _clone(state){
+    if(!state) return {};
+    return JSON.parse(JSON.stringify(state));
+  }
+}
+
+// =====================================================================
+// BOOTSTRAP — seed data
+// =====================================================================
 const system = new AttendanceSystem();
+const urManager = new UndoRedoManager();
 
-// Seed with 20 students (6-digit registration numbers)
 const sampleStudents = [
-  ['Ananya Rao', '124126'],
-  ['Vikram Iyer', '124127'],
-  ['Fatima Sheikh', '124128'],
-  ['Rohan Das', '124129'],
-  ['Priya Sharma', '124130'],
-  ['Arjun Patel', '124131'],
-  ['Kavya Nair', '124132'],
-  ['Aditya Kumar', '124133'],
-  ['Sneha Reddy', '124134'],
-  ['Karthik Menon', '124135'],
-  ['Ishaan Singh', '124136'],
-  ['Meera Joshi', '124137'],
-  ['Rahul Gupta', '124138'],
-  ['Diya Verma', '124139'],
-  ['Siddharth Bose', '124140'],
-  ['Anjali Desai', '124141'],
-  ['Nikhil Rao', '124142'],
-  ['Tanvi Pillai', '124143'],
-  ['Aarav Kapoor', '124144'],
-  ['Zara Khan', '124145']
+  ['Ananya Rao','124126'],['Vikram Iyer','124127'],['Fatima Sheikh','124128'],
+  ['Rohan Das','124129'],['Priya Sharma','124130'],['Arjun Patel','124131'],
+  ['Kavya Nair','124132'],['Aditya Kumar','124133'],['Sneha Reddy','124134'],
+  ['Karthik Menon','124135'],['Ishaan Singh','124136'],['Meera Joshi','124137'],
+  ['Rahul Gupta','124138'],['Diya Verma','124139'],['Siddharth Bose','124140'],
+  ['Anjali Desai','124141'],['Nikhil Rao','124142'],['Tanvi Pillai','124143'],
+  ['Aarav Kapoor','124144'],['Zara Khan','124145']
 ];
-
-sampleStudents.forEach(([name, regId]) => {
-  const res = system.addStudent(name, regId);
+sampleStudents.forEach(([n,r])=>{
+  const res = system.addStudent(n,r);
   if(res.ok){
-    const student = system.searchStudent(res.roll);
-    // Randomize attendance for demonstration
-    student.total = Math.floor(Math.random() * 15) + 5;
-    student.present = Math.floor(Math.random() * (student.total + 1));
+    const s = system.searchStudent(res.roll);
+    s.total   = Math.floor(Math.random()*15)+5;
+    s.present = Math.floor(Math.random()*(s.total+1));
   }
 });
-
-// Add some sample history entries
 const today = new Date();
-for(let i = 0; i < 10; i++){
-  const sessionDate = new Date(today);
-  sessionDate.setDate(sessionDate.getDate() - i);
-  
-  const records = system.toArray().map(s => ({
-    roll: s.roll,
-    name: s.name,
-    regId: s.regId,
-    present: Math.random() > 0.3 // 70% attendance rate
-  }));
-
+for(let i=0;i<10;i++){
+  const d=new Date(today); d.setDate(d.getDate()-i);
   system.history.push({
-    date: sessionDate.toLocaleDateString(),
-    time: '09:00 AM',
-    dateObj: sessionDate.toISOString(),
-    records
+    date:d.toLocaleDateString(), time:'09:00 AM', dateObj:d.toISOString(),
+    records: system.toArray().map(s=>({ roll:s.roll, name:s.name, regId:s.regId, present:Math.random()>0.3 }))
   });
 }
 
 // =====================================================================
-// UI WIRING
+// UI STATE
 // =====================================================================
-
-let currentSort = 'attendance-desc';
+let currentSort   = 'attendance-desc';
 let searchResults = null;
-let historyDateFilter = { start: null, end: null };
+let historyDateFilter = { start:null, end:null };
 
+// liveMarks holds the current toggle state: { [roll]: 'present' | 'absent' }
+let liveMarks = {};
+// initialMarks holds the default (all-present) state so Reset works
+let initialMarks = {};
+
+// =====================================================================
+// HELPERS
+// =====================================================================
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => t.classList.remove('show'), 2800);
+  toast._t = setTimeout(()=>t.classList.remove('show'), 2600);
 }
-
-function pctClass(p){
-  if(p === 100) return 'excellent';
-  return p >= 75 ? 'ok' : 'warn';
-}
-
+function pctClass(p){ return p===100?'excellent':p>=75?'ok':'warn'; }
 function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(d){
+  return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
 }
 
-function formatDate(dateStr){
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+// =====================================================================
+// UNDO/REDO UI REFRESH
+// =====================================================================
+function refreshUndoRedoUI(){
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  const hint    = document.getElementById('ur-hint');
+  const counter = document.getElementById('stack-counter');
+
+  undoBtn.disabled = !urManager.canUndo();
+  redoBtn.disabled = !urManager.canRedo();
+
+  const undoDesc = urManager.peekUndoDesc();
+  const redoDesc = urManager.peekRedoDesc();
+  if(undoDesc)      hint.textContent = `↩ Will undo: ${undoDesc}`;
+  else if(redoDesc) hint.textContent = `↪ Will redo: ${redoDesc}`;
+  else              hint.textContent = 'No changes made yet';
+
+  counter.innerHTML = `Undo: ${urManager.undoStack.length} &nbsp;|&nbsp; Redo: ${urManager.redoStack.length}`;
 }
 
+// =====================================================================
+// APPLY STATE — set all toggle DOM from a liveMarks snapshot
+// =====================================================================
+function applyMarksToDOM(marks){
+  const rows = document.querySelectorAll('#attendance-list .rollcall-row');
+  rows.forEach(row => {
+    const roll   = Number(row.getAttribute('data-roll'));
+    const status = marks[roll] || 'present';
+    const pBtn   = row.querySelector('.toggle.present');
+    const aBtn   = row.querySelector('.toggle.absent');
+    pBtn.classList.toggle('active', status === 'present');
+    aBtn.classList.toggle('active', status === 'absent');
+
+    // highlight rows that differ from initial
+    const changed = marks[roll] !== initialMarks[roll];
+    row.classList.toggle('changed', changed);
+  });
+  liveMarks = { ...marks };
+  refreshUndoRedoUI();
+}
+
+// =====================================================================
+// RENDER — REGISTER
+// =====================================================================
 function renderRegisterTable(){
   const wrap = document.getElementById('register-table-wrap');
   const list = system.toArray();
   document.getElementById('roster-count').textContent = list.length;
-  
-  if (list.length === 0){
-    wrap.innerHTML = `<div class="empty-note">No students enrolled yet. Add students using the form above.</div>`;
-    return;
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty-note">No students enrolled yet.</div>`; return;
   }
-  
   wrap.innerHTML = `
     <table>
       <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present</th><th>Total</th><th>%</th><th></th></tr></thead>
-      <tbody>
-        ${list.map(s => `
-          <tr>
-            <td class="mono">${s.roll}</td>
-            <td class="mono">${escapeHtml(s.regId)}</td>
-            <td>${escapeHtml(s.name)}</td>
-            <td class="mono">${s.present}</td>
-            <td class="mono">${s.total}</td>
-            <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
-            <td><button class="icon-btn" data-del="${s.roll}" type="button">Remove</button></td>
-          </tr>`).join('')}
+      <tbody>${list.map(s=>`
+        <tr>
+          <td class="mono">${s.roll}</td>
+          <td class="mono">${escapeHtml(s.regId)}</td>
+          <td>${escapeHtml(s.name)}</td>
+          <td class="mono">${s.present}</td>
+          <td class="mono">${s.total}</td>
+          <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
+          <td><button class="icon-btn" data-del="${s.roll}" type="button">Remove</button></td>
+        </tr>`).join('')}
       </tbody>
     </table>`;
-  wrap.querySelectorAll('[data-del]').forEach(btn => {
-    btn.addEventListener('click', () => {
+  wrap.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
       const roll = Number(btn.getAttribute('data-del'));
-      const res = system.deleteStudent(roll);
-      toast(res.msg);
-      renderAll();
+      const res  = system.deleteStudent(roll);
+      toast(res.msg); renderAll();
     });
   });
 }
 
+// =====================================================================
+// RENDER — SEARCH
+// =====================================================================
 function renderSearchResults(){
   const wrap = document.getElementById('search-results-wrap');
   const list = searchResults || [];
-  
   document.getElementById('search-result-count').textContent = `${list.length} FOUND`;
-  
-  if (list.length === 0){
+  if(!list.length){
     wrap.innerHTML = `<div class="empty-note">No search performed yet. Enter both Roll Number and Registration Number above.</div>`;
     return;
   }
-  
   wrap.innerHTML = `
     <table>
       <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present</th><th>Total</th><th>%</th></tr></thead>
-      <tbody>
-        ${list.map(s => `
-          <tr class="highlight-row">
-            <td class="mono">${s.roll}</td>
-            <td class="mono">${escapeHtml(s.regId)}</td>
-            <td>${escapeHtml(s.name)}</td>
-            <td class="mono">${s.present}</td>
-            <td class="mono">${s.total}</td>
-            <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
-          </tr>`).join('')}
+      <tbody>${list.map(s=>`
+        <tr class="highlight-row">
+          <td class="mono">${s.roll}</td>
+          <td class="mono">${escapeHtml(s.regId)}</td>
+          <td>${escapeHtml(s.name)}</td>
+          <td class="mono">${s.present}</td>
+          <td class="mono">${s.total}</td>
+          <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
+        </tr>`).join('')}
       </tbody>
     </table>`;
 }
 
+// =====================================================================
+// RENDER — ATTENDANCE (with undo/redo wiring)
+// =====================================================================
 function renderAttendance(){
   const wrap = document.getElementById('attendance-list');
   const list = system.toArray();
-  if (list.length === 0){
-    wrap.innerHTML = `<div class="empty-note">No students to call. Enroll students in the Register tab first.</div>`;
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty-note">No students to call. Enroll students first.</div>`;
     return;
   }
-  wrap.innerHTML = list.map(s => `
+
+  // Build default state: all present
+  initialMarks = {};
+  list.forEach(s => { initialMarks[s.roll] = 'present'; });
+  liveMarks = { ...initialMarks };
+
+  // Init undo/redo with blank slate
+  urManager.init(liveMarks);
+
+  wrap.innerHTML = list.map(s=>`
     <div class="rollcall-row" data-roll="${s.roll}">
       <div class="rollcall-name">
         <span class="roll mono">#${s.roll}</span>
         ${escapeHtml(s.name)}
-        <span class="mono" style="color:var(--ink-muted); font-size:11px; margin-left:8px;">(${escapeHtml(s.regId)})</span>
+        <span class="mono" style="color:var(--ink-muted);font-size:11px;margin-left:8px;">(${escapeHtml(s.regId)})</span>
+        <span class="changed-badge">edited</span>
       </div>
       <div class="toggle-group">
-        <button class="toggle present active" data-state="present" type="button">Present</button>
-        <button class="toggle absent" data-state="absent" type="button">Absent</button>
+        <button class="toggle present active" type="button">Present</button>
+        <button class="toggle absent"         type="button">Absent</button>
       </div>
     </div>`).join('');
 
-  wrap.querySelectorAll('.rollcall-row').forEach(row => {
-    const buttons = row.querySelectorAll('.toggle');
-    buttons.forEach(b => {
-      b.addEventListener('click', () => {
-        buttons.forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-      });
-    });
+  // Wire toggles
+  wrap.querySelectorAll('.rollcall-row').forEach(row=>{
+    const roll    = Number(row.getAttribute('data-roll'));
+    const student = system.searchStudent(roll);
+    const pBtn    = row.querySelector('.toggle.present');
+    const aBtn    = row.querySelector('.toggle.absent');
+
+    const doToggle = (newStatus) => {
+      const oldStatus = liveMarks[roll];
+      if(oldStatus === newStatus) return; // no change
+
+      const desc = `Roll #${roll} ${escapeHtml(student.name)} → ${newStatus}`;
+      const next = { ...liveMarks, [roll]: newStatus };
+      urManager.push(next, desc);
+      applyMarksToDOM(next);
+    };
+
+    pBtn.addEventListener('click', () => doToggle('present'));
+    aBtn.addEventListener('click', () => doToggle('absent'));
   });
+
+  refreshUndoRedoUI();
 }
 
+// =====================================================================
+// SUBMIT ATTENDANCE
+// =====================================================================
 function submitAttendance(){
   const dateInput = document.getElementById('attendance-date');
-  if(!dateInput.value){
-    toast('Please select an attendance date first.');
-    return;
-  }
+  if(!dateInput.value){ toast('Please select an attendance date first.'); return; }
 
   const rows = document.querySelectorAll('#attendance-list .rollcall-row');
-  if (rows.length === 0) return;
-  
+  if(!rows.length) return;
+
   const records = [];
-  rows.forEach(row => {
-    const roll = Number(row.getAttribute('data-roll'));
-    const student = system.searchStudent(roll);
-    if (!student) return;
-    const isPresent = row.querySelector('.toggle.present').classList.contains('active');
-    student.total += 1;
-    if (isPresent) student.present += 1;
-    records.push({ roll, name: student.name, regId: student.regId, present: isPresent });
+  rows.forEach(row=>{
+    const roll      = Number(row.getAttribute('data-roll'));
+    const student   = system.searchStudent(roll);
+    if(!student) return;
+    const isPresent = liveMarks[roll] !== 'absent';
+    student.total  += 1;
+    if(isPresent) student.present += 1;
+    records.push({ roll, name:student.name, regId:student.regId, present:isPresent });
   });
-  
-  const selectedDate = new Date(dateInput.value);
-  const now = new Date();
-  
+
+  const selDate = new Date(dateInput.value);
+  const now     = new Date();
   system.history.unshift({
-    date: selectedDate.toLocaleDateString(),
-    time: now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }),
-    dateObj: selectedDate.toISOString(),
+    date: selDate.toLocaleDateString(),
+    time: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+    dateObj: selDate.toISOString(),
     records
   });
-  
-  toast(`Attendance for ${selectedDate.toLocaleDateString()} submitted and logged.`);
-  
-  // Reset all to present for next entry
-  document.querySelectorAll('.rollcall-row').forEach(row => {
-    row.querySelectorAll('.toggle').forEach(t => t.classList.remove('active'));
-    row.querySelector('.toggle.present').classList.add('active');
-  });
-  
+
+  toast(`Attendance for ${selDate.toLocaleDateString()} submitted and logged.`);
+  renderAttendance();   // re-init the roll-call (also resets undo/redo)
   renderAll();
 }
 
+// =====================================================================
+// RENDER — RANKING
+// =====================================================================
 function renderRanking(){
   const wrap = document.getElementById('ranking-table-wrap');
   const list = system.sortStudents(currentSort);
-  
-  if (list.length === 0){
-    wrap.innerHTML = `<div class="empty-note">No students to rank yet.</div>`;
-    return;
-  }
-  
-  wrap.innerHTML = `
+  if(!list.length){ wrap.innerHTML=`<div class="empty-note">No students to rank yet.</div>`; return; }
+  wrap.innerHTML=`
     <table>
       <thead><tr><th>Rank</th><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present/Total</th><th>%</th></tr></thead>
-      <tbody>
-        ${list.map((s,i) => `
-          <tr>
-            <td class="mono">${i+1}</td>
-            <td class="mono">${s.roll}</td>
-            <td class="mono">${escapeHtml(s.regId)}</td>
-            <td>${escapeHtml(s.name)}</td>
-            <td class="mono">${s.present}/${s.total}</td>
-            <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
-          </tr>`).join('')}
+      <tbody>${list.map((s,i)=>`
+        <tr>
+          <td class="mono">${i+1}</td>
+          <td class="mono">${s.roll}</td>
+          <td class="mono">${escapeHtml(s.regId)}</td>
+          <td>${escapeHtml(s.name)}</td>
+          <td class="mono">${s.present}/${s.total}</td>
+          <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
+        </tr>`).join('')}
       </tbody>
     </table>`;
 }
 
+// =====================================================================
+// RENDER — HISTORY
+// =====================================================================
 function renderHistory(){
   const wrap = document.getElementById('history-list-wrap');
-  const filteredHistory = system.getHistoryByDateRange(historyDateFilter.start, historyDateFilter.end);
-  
-  // Update display
-  if(historyDateFilter.start || historyDateFilter.end){
-    const startStr = historyDateFilter.start ? formatDate(historyDateFilter.start) : 'Beginning';
-    const endStr = historyDateFilter.end ? formatDate(historyDateFilter.end) : 'Today';
-    document.getElementById('history-count-display').textContent = `${startStr} TO ${endStr} (${filteredHistory.length})`;
+  const fh   = system.getHistoryByDateRange(historyDateFilter.start, historyDateFilter.end);
+
+  if(historyDateFilter.start||historyDateFilter.end){
+    const s = historyDateFilter.start ? formatDate(historyDateFilter.start) : 'Beginning';
+    const e = historyDateFilter.end   ? formatDate(historyDateFilter.end)   : 'Today';
+    document.getElementById('history-count-display').textContent=`${s} TO ${e} (${fh.length})`;
   } else {
-    document.getElementById('history-count-display').textContent = `ALL RECORDS (${filteredHistory.length})`;
+    document.getElementById('history-count-display').textContent=`ALL RECORDS (${fh.length})`;
   }
-  
-  if (filteredHistory.length === 0){
-    wrap.innerHTML = `<div class="empty-note">No attendance records found for the selected date range.</div>`;
-    return;
-  }
-  
-  wrap.innerHTML = filteredHistory.map(session => {
-    const presentCount = session.records.filter(r => r.present).length;
-    const absentCount = session.records.length - presentCount;
-    const names = session.records.map(r =>
-      `<span class="hist-name ${r.present ? 'present' : 'absent'}">#${r.roll} ${escapeHtml(r.name)} — ${r.present ? '✓' : '✗'}</span>`
+
+  if(!fh.length){ wrap.innerHTML=`<div class="empty-note">No records for the selected date range.</div>`; return; }
+  wrap.innerHTML = fh.map(session=>{
+    const pCnt = session.records.filter(r=>r.present).length;
+    const aCnt = session.records.length - pCnt;
+    const names = session.records.map(r=>
+      `<span class="hist-name ${r.present?'present':'absent'}">#${r.roll} ${escapeHtml(r.name)} — ${r.present?'✓':'✗'}</span>`
     ).join('');
     return `
       <div class="history-entry">
         <div class="hist-head">
-          <div><strong>${session.date}</strong> <span class="mono" style="color:var(--ink-muted); font-size:12px;">${session.time}</span></div>
-          <div style="display:flex; gap:8px;">
-            <span class="pct ok">${presentCount} present</span>
-            <span class="pct warn">${absentCount} absent</span>
+          <div><strong>${session.date}</strong> <span class="mono" style="color:var(--ink-muted);font-size:12px;">${session.time}</span></div>
+          <div style="display:flex;gap:8px;">
+            <span class="pct ok">${pCnt} present</span>
+            <span class="pct warn">${aCnt} absent</span>
           </div>
         </div>
         <div>${names}</div>
@@ -1021,44 +1138,42 @@ function renderHistory(){
   }).join('');
 }
 
+// =====================================================================
+// RENDER — REPORT
+// =====================================================================
 function renderReport(){
-  const summaryWrap = document.getElementById('report-summary-wrap');
-  const list = system.toArray();
-  const withRecords = list.filter(s => s.total > 0);
-  const avg = withRecords.length ? (withRecords.reduce((sum,s) => sum + s.percentage, 0) / withRecords.length) : 0;
-  const defaulters = system.defaulters(75);
-  const best = withRecords.slice().sort((a,b) => b.percentage - a.percentage)[0];
-  const perfect = withRecords.filter(s => s.percentage === 100).length;
+  const list        = system.toArray();
+  const withRec     = list.filter(s=>s.total>0);
+  const avg         = withRec.length ? withRec.reduce((a,s)=>a+s.percentage,0)/withRec.length : 0;
+  const def         = system.defaulters(75);
+  const best        = withRec.slice().sort((a,b)=>b.percentage-a.percentage)[0];
+  const perfect     = withRec.filter(s=>s.percentage===100).length;
 
-  summaryWrap.innerHTML = `
+  document.getElementById('report-summary-wrap').innerHTML=`
     <div class="dsa-grid">
-      <div class="dsa-card"><h3>Total Students</h3><p style="font-size:22px; font-weight:700; color:var(--purple);">${list.length}</p></div>
-      <div class="dsa-card"><h3>Class Average</h3><p style="font-size:22px; font-weight:700; color:var(--purple);">${avg.toFixed(1)}%</p></div>
-      <div class="dsa-card"><h3>Perfect Attendance</h3><p style="font-size:22px; font-weight:700; color:var(--green);">${perfect}</p></div>
-      <div class="dsa-card"><h3>Below 75%</h3><p style="font-size:22px; font-weight:700; color:var(--red);">${defaulters.length}</p></div>
-      <div class="dsa-card"><h3>Top Student</h3><p style="font-size:14px; color:var(--ink-muted); margin-top:4px;">${best ? escapeHtml(best.name) + ' — ' + best.percentage.toFixed(1) + '%' : 'No records yet'}</p></div>
-      <div class="dsa-card"><h3>Total Sessions</h3><p style="font-size:22px; font-weight:700; color:var(--purple);">${system.history.length}</p></div>
+      <div class="dsa-card"><h3>Total Students</h3><p style="font-size:22px;font-weight:700;color:var(--purple);">${list.length}</p></div>
+      <div class="dsa-card"><h3>Class Average</h3><p style="font-size:22px;font-weight:700;color:var(--purple);">${avg.toFixed(1)}%</p></div>
+      <div class="dsa-card"><h3>Perfect Attendance</h3><p style="font-size:22px;font-weight:700;color:var(--green);">${perfect}</p></div>
+      <div class="dsa-card"><h3>Below 75%</h3><p style="font-size:22px;font-weight:700;color:var(--red);">${def.length}</p></div>
+      <div class="dsa-card"><h3>Top Student</h3><p style="font-size:14px;color:var(--ink-muted);margin-top:4px;">${best?escapeHtml(best.name)+' — '+best.percentage.toFixed(1)+'%':'No records yet'}</p></div>
+      <div class="dsa-card"><h3>Total Sessions</h3><p style="font-size:22px;font-weight:700;color:var(--purple);">${system.history.length}</p></div>
     </div>`;
 
-  const defWrap = document.getElementById('report-defaulters-wrap');
-  if (defaulters.length === 0){
-    defWrap.innerHTML = `<div class="empty-note">🎉 No defaulters — everyone is at or above 75%!</div>`;
-  } else {
-    defWrap.innerHTML = `
-      <table>
-        <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present/Total</th><th>%</th></tr></thead>
-        <tbody>
-          ${defaulters.map(s => `
-            <tr>
-              <td class="mono">${s.roll}</td>
-              <td class="mono">${escapeHtml(s.regId)}</td>
-              <td>${escapeHtml(s.name)}</td>
-              <td class="mono">${s.present}/${s.total}</td>
-              <td class="mono pct warn">${s.percentage.toFixed(1)}%</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>`;
-  }
+  const dw = document.getElementById('report-defaulters-wrap');
+  if(!def.length){ dw.innerHTML=`<div class="empty-note">🎉 No defaulters!</div>`; return; }
+  dw.innerHTML=`
+    <table>
+      <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present/Total</th><th>%</th></tr></thead>
+      <tbody>${def.map(s=>`
+        <tr>
+          <td class="mono">${s.roll}</td>
+          <td class="mono">${escapeHtml(s.regId)}</td>
+          <td>${escapeHtml(s.name)}</td>
+          <td class="mono">${s.present}/${s.total}</td>
+          <td class="mono pct warn">${s.percentage.toFixed(1)}%</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 
 function renderAll(){
@@ -1070,222 +1185,204 @@ function renderAll(){
   if(searchResults !== null) renderSearchResults();
 }
 
-// ---- tabs ----
+// =====================================================================
+// TABS
+// =====================================================================
 const pageMeta = {
-  register:   { title:'Student Registration', sub:'Add new students to the attendance system. Roll numbers are assigned automatically.' },
-  search:     { title:'🔍 Search Students', sub:'Find students using both Roll Number AND Registration Number (both required).' },
-  attendance: { title:"Mark Attendance", sub:'Select date and mark students as present or absent.' },
-  ranking:    { title:'Student Rankings', sub:'View students sorted by attendance percentage, name, or roll number.' },
-  history:    { title:'Attendance History', sub:'View past attendance records with date range filters.' },
-  report:     { title:'Analytics & Reports', sub:'View class statistics and export/import data.' },
+  register:   { title:'Student Registration',   sub:'Add new students. Roll numbers are assigned automatically.' },
+  search:     { title:'🔍 Search Students',      sub:'Find students using both Roll Number AND Registration Number (both required).' },
+  attendance: { title:'Mark Attendance',         sub:'Select a date, mark students, and use Undo / Redo to correct mistakes before submitting.' },
+  ranking:    { title:'Student Rankings',        sub:'Sort students by attendance %, name, or roll number.' },
+  history:    { title:'Attendance History',      sub:'View past attendance records with date-range filters.' },
+  report:     { title:'Analytics & Reports',    sub:'Class statistics, defaulters list, backup and restore.' },
 };
-
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    const meta = pageMeta[tab.dataset.tab];
-    if (meta){
-      document.getElementById('pageTitle').textContent = meta.title;
-      document.getElementById('pageSub').textContent = meta.sub;
-    }
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+    const m = pageMeta[tab.dataset.tab];
+    if(m){ document.getElementById('pageTitle').textContent=m.title; document.getElementById('pageSub').textContent=m.sub; }
   });
 });
 
-// Auto-format registration number input (only digits)
-document.getElementById('in-regid').addEventListener('input', (e) => {
-  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
-});
+// =====================================================================
+// REGISTER — add student
+// =====================================================================
+document.getElementById('in-regid').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/\D/g,'').slice(0,6); });
+document.getElementById('adv-search-regid').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/\D/g,'').slice(0,6); });
 
-document.getElementById('adv-search-regid').addEventListener('input', (e) => {
-  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
-});
-
-// ---- add student ----
-document.getElementById('add-student-btn').addEventListener('click', () => {
-  const regIdInput = document.getElementById('in-regid');
-  const nameInput = document.getElementById('in-name');
-  const regId = regIdInput.value.trim();
-  const name = nameInput.value.trim();
-  
-  if (!regId){ toast('Enter a registration number.'); return; }
-  if (!name){ toast('Enter a student name.'); return; }
-  
+document.getElementById('add-student-btn').addEventListener('click',()=>{
+  const ri = document.getElementById('in-regid');
+  const ni = document.getElementById('in-name');
+  const regId = ri.value.trim(), name = ni.value.trim();
+  if(!regId){ toast('Enter a registration number.'); return; }
+  if(!name){ toast('Enter a student name.'); return; }
   const res = system.addStudent(name, regId);
   toast(res.msg);
-  if (res.ok){ 
-    regIdInput.value=''; 
-    nameInput.value=''; 
-  }
+  if(res.ok){ ri.value=''; ni.value=''; }
   renderAll();
 });
 
-// ---- strict search (BOTH roll AND regId required and must match) ----
-document.getElementById('adv-search-btn').addEventListener('click', () => {
-  const rollVal = document.getElementById('adv-search-roll').value;
-  const regIdVal = document.getElementById('adv-search-regid').value.trim();
-  
-  // Perform strict search
-  const result = system.strictSearch(rollVal ? Number(rollVal) : null, regIdVal);
-  
-  if (result.success) {
-    // Student found and both values match
-    searchResults = [result.student];
-    renderSearchResults();
-    toast('✓ ' + result.message);
-  } else {
-    // Either missing values or mismatch
-    searchResults = [];
-    renderSearchResults();
-    toast('✗ ' + result.message);
-  }
+// =====================================================================
+// SEARCH
+// =====================================================================
+document.getElementById('adv-search-btn').addEventListener('click',()=>{
+  const roll   = document.getElementById('adv-search-roll').value;
+  const regId  = document.getElementById('adv-search-regid').value.trim();
+  const result = system.strictSearch(roll ? Number(roll) : null, regId);
+  searchResults = result.success ? [result.student] : [];
+  renderSearchResults();
+  toast((result.success ? '✓ ' : '✗ ') + result.message);
 });
-
-document.getElementById('adv-clear-btn').addEventListener('click', () => {
-  document.getElementById('adv-search-roll').value = '';
-  document.getElementById('adv-search-regid').value = '';
+document.getElementById('adv-clear-btn').addEventListener('click',()=>{
+  document.getElementById('adv-search-roll').value='';
+  document.getElementById('adv-search-regid').value='';
   searchResults = null;
   renderSearchResults();
   toast('Search cleared.');
 });
 
-// ---- attendance date picker ----
-const attendanceDateInput = document.getElementById('attendance-date');
-attendanceDateInput.value = new Date().toISOString().split('T')[0];
+// =====================================================================
+// ATTENDANCE — date picker
+// =====================================================================
+const attDateInput = document.getElementById('attendance-date');
+attDateInput.value = new Date().toISOString().split('T')[0];
 document.getElementById('attendance-date-display').textContent = new Date().toLocaleDateString();
-
-attendanceDateInput.addEventListener('change', (e) => {
-  const selectedDate = new Date(e.target.value);
-  document.getElementById('attendance-date-display').textContent = selectedDate.toLocaleDateString();
+attDateInput.addEventListener('change',e=>{
+  document.getElementById('attendance-date-display').textContent = new Date(e.target.value).toLocaleDateString();
 });
-
-document.getElementById('set-today-btn').addEventListener('click', () => {
-  const today = new Date().toISOString().split('T')[0];
-  attendanceDateInput.value = today;
+document.getElementById('set-today-btn').addEventListener('click',()=>{
+  attDateInput.value = new Date().toISOString().split('T')[0];
   document.getElementById('attendance-date-display').textContent = new Date().toLocaleDateString();
 });
 
+// =====================================================================
+// ATTENDANCE — UNDO
+// =====================================================================
+document.getElementById('undo-btn').addEventListener('click',()=>{
+  const result = urManager.undo();
+  if(!result){ toast('Nothing to undo.'); return; }
+  applyMarksToDOM(result.state);
+  toast(`↩ Undone: ${result.desc}`);
+});
+
+// =====================================================================
+// ATTENDANCE — REDO
+// =====================================================================
+document.getElementById('redo-btn').addEventListener('click',()=>{
+  const result = urManager.redo();
+  if(!result){ toast('Nothing to redo.'); return; }
+  applyMarksToDOM(result.state);
+  toast(`↪ Redone: ${result.desc}`);
+});
+
+// =====================================================================
+// ATTENDANCE — Mark All / Reset
+// =====================================================================
+document.getElementById('mark-all-present-btn').addEventListener('click',()=>{
+  const next = {};
+  system.toArray().forEach(s => { next[s.roll] = 'present'; });
+  urManager.push(next, 'Mark all students Present');
+  applyMarksToDOM(next);
+  toast('All students marked Present.');
+});
+
+document.getElementById('mark-all-absent-btn').addEventListener('click',()=>{
+  const next = {};
+  system.toArray().forEach(s => { next[s.roll] = 'absent'; });
+  urManager.push(next, 'Mark all students Absent');
+  applyMarksToDOM(next);
+  toast('All students marked Absent.');
+});
+
+document.getElementById('reset-attendance-btn').addEventListener('click',()=>{
+  urManager.push({ ...initialMarks }, 'Reset to default (all Present)');
+  applyMarksToDOM({ ...initialMarks });
+  toast('Attendance reset to default (all Present).');
+});
+
+// =====================================================================
+// ATTENDANCE — Submit
+// =====================================================================
 document.getElementById('submit-attendance-btn').addEventListener('click', submitAttendance);
 
-// ---- ranking sort ----
-document.querySelectorAll('.sort-controls .btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+// =====================================================================
+// RANKING — sort
+// =====================================================================
+document.querySelectorAll('.sort-controls .btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
     if(!btn.dataset.sort) return;
-    document.querySelectorAll('.sort-controls .btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sort-controls .btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentSort = btn.dataset.sort;
     renderRanking();
   });
 });
 
-// ---- history date filter ----
-document.getElementById('history-30days-btn').addEventListener('click', () => {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 30);
-  
-  historyDateFilter.start = start.toISOString().split('T')[0];
-  historyDateFilter.end = end.toISOString().split('T')[0];
-  
+// =====================================================================
+// HISTORY — date filter
+// =====================================================================
+document.getElementById('history-30days-btn').addEventListener('click',()=>{
+  const end=new Date(), start=new Date();
+  start.setDate(start.getDate()-30);
+  historyDateFilter = { start:start.toISOString().split('T')[0], end:end.toISOString().split('T')[0] };
   document.getElementById('history-start-date').value = historyDateFilter.start;
-  document.getElementById('history-end-date').value = historyDateFilter.end;
-  
+  document.getElementById('history-end-date').value   = historyDateFilter.end;
   renderHistory();
 });
-
-document.getElementById('history-all-btn').addEventListener('click', () => {
-  historyDateFilter = { start: null, end: null };
-  document.getElementById('history-start-date').value = '';
-  document.getElementById('history-end-date').value = '';
+document.getElementById('history-all-btn').addEventListener('click',()=>{
+  historyDateFilter = { start:null, end:null };
+  document.getElementById('history-start-date').value='';
+  document.getElementById('history-end-date').value='';
   renderHistory();
 });
+document.getElementById('history-start-date').addEventListener('change',e=>{ historyDateFilter.start=e.target.value; renderHistory(); });
+document.getElementById('history-end-date').addEventListener('change',e=>{ historyDateFilter.end=e.target.value; renderHistory(); });
 
-document.getElementById('history-start-date').addEventListener('change', (e) => {
-  historyDateFilter.start = e.target.value;
-  renderHistory();
-});
-
-document.getElementById('history-end-date').addEventListener('change', (e) => {
-  historyDateFilter.end = e.target.value;
-  renderHistory();
-});
-
-// ---- export / import ----
-document.getElementById('export-btn').addEventListener('click', () => {
+// =====================================================================
+// EXPORT / IMPORT
+// =====================================================================
+document.getElementById('export-btn').addEventListener('click',()=>{
   const data = {
-    students: system.toArray().map(s => ({ 
-      roll: s.roll, 
-      name: s.name, 
-      regId: s.regId, 
-      present: s.present, 
-      total: s.total 
-    })),
-    history: system.history,
-    nextRoll: system.nextRoll
+    students: system.toArray().map(s=>({ roll:s.roll, name:s.name, regId:s.regId, present:s.present, total:s.total })),
+    history: system.history, nextRoll: system.nextRoll
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; 
-  a.download = `attendify_report_${new Date().toISOString().split('T')[0]}.json`;
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download=`attendify_report_${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('Report downloaded successfully!');
 });
-
-document.getElementById('import-input').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+document.getElementById('import-input').addEventListener('change',e=>{
+  const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = ()=>{
     try{
-      const parsed = JSON.parse(reader.result);
+      const parsed       = JSON.parse(reader.result);
       const studentsData = parsed.students || [];
-      const historyData = parsed.history || [];
-      const nextRoll = parsed.nextRoll || 1;
-      
-      system.head = null;
-      system.rollIndex = new Map();
-      system.regIdIndex = new Map();
-      system.nextRoll = nextRoll;
-      
-      // Sort students by roll number before inserting
-      const sortedStudents = studentsData.sort((a, b) => a.roll - b.roll);
-      
-      sortedStudents.forEach(s => {
-        const node = new StudentNode(s.roll, s.name, s.regId);
-        node.present = s.present || 0;
-        node.total = s.total || 0;
-        
-        // Insert at end to maintain order
-        if (!system.head) {
-          system.head = node;
-        } else {
-          let curr = system.head;
-          while (curr.next) {
-            curr = curr.next;
-          }
-          curr.next = node;
-        }
-        
-        system.rollIndex.set(s.roll, node);
-        system.regIdIndex.set(s.regId, node);
+      const historyData  = parsed.history  || [];
+      system.head=null; system.rollIndex=new Map(); system.regIdIndex=new Map(); system.nextRoll=parsed.nextRoll||1;
+      studentsData.sort((a,b)=>a.roll-b.roll).forEach(s=>{
+        const node = new StudentNode(s.roll,s.name,s.regId);
+        node.present=s.present||0; node.total=s.total||0;
+        if(!system.head){ system.head=node; }
+        else { let c=system.head; while(c.next) c=c.next; c.next=node; }
+        system.rollIndex.set(s.roll,node); system.regIdIndex.set(s.regId,node);
       });
-      
-      system.history = historyData;
-      toast('Report loaded successfully!');
-      renderAll();
-    }catch(err){
-      toast('Error reading file. Please check format.');
-    }
+      system.history=historyData;
+      toast('Report loaded successfully!'); renderAll();
+    }catch(err){ toast('Error reading file. Please check format.'); }
   };
-  reader.readAsText(file);
-  e.target.value = '';
+  reader.readAsText(file); e.target.value='';
 });
 
-// Initial render
+// =====================================================================
+// INIT
+// =====================================================================
 renderAll();
 </script>
 </body>
