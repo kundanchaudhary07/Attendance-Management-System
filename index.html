@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Attendance Register — DSA Edition</title>
+<title>Attendify Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -23,6 +23,8 @@
     --blue-soft:#DCEAFB;
     --red:#C24A5B;
     --red-soft:#FBE3E7;
+    --green:#2D9C6C;
+    --green-soft:#D4F4E7;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
@@ -37,7 +39,6 @@
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-thumb{ background:var(--purple-line); border-radius:4px; }
 
-  /* ---------------- SIDEBAR (left · dark purple) ---------------- */
   .sidebar{
     width:262px;
     flex-shrink:0;
@@ -54,7 +55,7 @@
   .brand h1{
     font-family:'Fraunces',serif;
     font-weight:600;
-    font-size:23px;
+    font-size:26px;
     margin:0 0 6px;
     color:#FBFAFF;
     line-height:1.25;
@@ -110,7 +111,6 @@
     line-height:1.55;
   }
 
-  /* ---------------- MAIN (right · light blue) ---------------- */
   .main{
     flex:1;
     display:flex;
@@ -175,7 +175,11 @@
     display:block;
     margin-bottom:6px;
   }
-  input[type=text], input[type=number]{
+  label .required{
+    color:var(--red);
+    font-weight:700;
+  }
+  input[type=text], input[type=number], input[type=date], select{
     font-family:'Inter',sans-serif;
     font-size:14px;
     padding:10px 12px;
@@ -185,7 +189,10 @@
     color:var(--ink);
     width:100%;
   }
-  input:focus, .tab:focus-visible, .btn:focus-visible, .icon-btn:focus-visible{
+  select{
+    cursor:pointer;
+  }
+  input:focus, select:focus, .tab:focus-visible, .btn:focus-visible, .icon-btn:focus-visible{
     outline:2px solid var(--blue); outline-offset:2px;
   }
 
@@ -226,6 +233,7 @@
   .pct{ font-weight:700; padding:2px 9px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12.5px; }
   .pct.ok{ color:var(--blue-dark); background:var(--blue-soft); }
   .pct.warn{ color:var(--red); background:var(--red-soft); }
+  .pct.excellent{ color:var(--green); background:var(--green-soft); }
 
   .empty-note{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--ink-muted); padding:20px 0; }
 
@@ -258,7 +266,7 @@
   }
   .icon-btn:hover{ background:var(--red-soft); border-color:var(--red); }
 
-  .sort-controls{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .sort-controls{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
   .sort-controls .btn{ font-size:12.5px; padding:8px 15px; background:var(--sky-tint); color:var(--ink); border-color:var(--line); }
   .sort-controls .btn.active{ background:var(--purple); color:#fff; border-color:var(--purple); }
 
@@ -270,22 +278,27 @@
   }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-  pre.code{
-    background:var(--purple-dark);
-    color:#DCE9F7;
-    font-family:'JetBrains Mono',monospace;
-    font-size:12.5px;
-    line-height:1.55;
-    padding:18px;
-    border-radius:10px;
-    overflow-x:auto;
-    border:1px solid var(--purple-mid);
-  }
-  .code-note{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-muted); margin:10px 0 18px; line-height:1.6; }
-  .dsa-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:20px; }
+  .dsa-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:6px; }
   .dsa-card{ border:1px solid var(--line); background:var(--sky-tint); border-radius:10px; padding:15px 16px; }
   .dsa-card h3{ font-family:'JetBrains Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; color:var(--purple); margin:0 0 7px; }
   .dsa-card p{ font-size:13.5px; margin:0; color:var(--ink-muted); line-height:1.55; }
+
+  .history-entry{
+    background:var(--sky-card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:12px;
+  }
+  .history-entry .hist-head{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:8px; margin-bottom:10px;
+  }
+  .history-entry .hist-name{ margin:2px 8px 2px 0; display:inline-block; font-size:13px; }
+  .history-entry .hist-name.present{ color:var(--blue-dark); }
+  .history-entry .hist-name.absent{ color:var(--red); }
+
+  .code-note{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-muted); margin:10px 0 18px; line-height:1.6; }
 
   footer.appfoot{
     text-align:center; padding:18px 10px 8px; font-family:'JetBrains Mono',monospace;
@@ -295,6 +308,63 @@
   .panel{ display:none; }
   .panel.active{ display:block; animation:fade .2s ease; }
   @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .search-controls{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+
+  .highlight-row{
+    background:var(--blue-soft) !important;
+    border-left:3px solid var(--blue) !important;
+  }
+
+  .date-picker-wrap{
+    background:var(--blue-soft);
+    padding:14px 16px;
+    border-radius:10px;
+    margin-bottom:16px;
+    display:flex;
+    gap:12px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+
+  .stats-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+  }
+  .stats-badge.total{ background:var(--purple); color:#fff; }
+
+  .helper-text{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--ink-muted);
+    margin-top:4px;
+  }
+
+  .alert-box{
+    background:var(--red-soft);
+    border:1px solid var(--red);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:16px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--red);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
 
   @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
 
@@ -316,24 +386,24 @@
 
 <aside class="sidebar">
   <div class="brand">
-    <h1>Attendance Register</h1>
-    <p>DSA Edition · C++ Engine</p>
+    <h1>Attendify Pro</h1>
+    <p>Smart Attendance System</p>
   </div>
   <nav class="tabs" id="app">
-    <button class="tab active" data-tab="register"><span class="t-title">Register</span><span class="t-sub">Linked List</span></button>
-    <button class="tab" data-tab="rollcall"><span class="t-title">Roll Call</span><span class="t-sub">Queue Pass</span></button>
-    <button class="tab" data-tab="rankings"><span class="t-title">Rankings</span><span class="t-sub">Merge Sort</span></button>
-    <button class="tab" data-tab="defaulters"><span class="t-title">Defaulters</span><span class="t-sub">Linear Scan</span></button>
-    <button class="tab" data-tab="data"><span class="t-title">Data</span><span class="t-sub">Export / Import</span></button>
-    <button class="tab" data-tab="source"><span class="t-title">Source</span><span class="t-sub">C++ ⇄ JS</span></button>
+    <button class="tab active" data-tab="register"><span class="t-title">Register</span><span class="t-sub">Student Management</span></button>
+    <button class="tab" data-tab="search"><span class="t-title">🔍 Search</span><span class="t-sub">Find Students</span></button>
+    <button class="tab" data-tab="attendance"><span class="t-title">Take Attendance</span><span class="t-sub">Mark Present/Absent</span></button>
+    <button class="tab" data-tab="ranking"><span class="t-title">Ranking</span><span class="t-sub">Sort & View</span></button>
+    <button class="tab" data-tab="history"><span class="t-title">History</span><span class="t-sub">Past Records</span></button>
+    <button class="tab" data-tab="report"><span class="t-title">Report</span><span class="t-sub">Analytics & Export</span></button>
   </nav>
-  <div class="sidebar-foot">Data lives only in this browser tab. Use <b>Data</b> to save or load a roster file.</div>
+  <div class="sidebar-foot">Attendify Pro • Unlimited student capacity • Data stored in browser session only</div>
 </aside>
 
 <div class="main">
   <div class="topbar">
-    <h2 id="pageTitle">Enroll a Student</h2>
-    <p class="sub" id="pageSub">Every student is a node with a next pointer — inserted at the head in O(1).</p>
+    <h2 id="pageTitle">Student Registration</h2>
+    <p class="sub" id="pageSub">Add new students to the attendance system. Roll numbers are assigned automatically.</p>
   </div>
 
   <div class="content">
@@ -341,11 +411,12 @@
     <!-- REGISTER -->
     <div class="panel active" id="panel-register">
       <div class="card">
-        <h2 class="section-title">Enroll a Student <small>LINKED LIST · INSERT O(1)</small></h2>
+        <h2 class="section-title">Enroll a Student</h2>
         <div class="field-row">
           <div class="field">
-            <label for="in-roll">Roll number</label>
-            <input type="number" id="in-roll" placeholder="e.g. 21" min="0">
+            <label for="in-regid">Registration Number (6 digits)</label>
+            <input type="text" id="in-regid" placeholder="e.g. 124126" maxlength="6" pattern="[0-9]{6}">
+            <div class="helper-text">Enter exactly 6 digits</div>
           </div>
           <div class="field" style="flex:2;">
             <label for="in-name">Full name</label>
@@ -356,101 +427,129 @@
       </div>
 
       <div class="card">
-        <h2 class="section-title">All Students <small>TRAVERSE LINKED LIST</small></h2>
-        <div style="display:flex; gap:10px; margin-bottom:16px; align-items:flex-end; flex-wrap:wrap;">
-          <div class="field" style="max-width:200px;">
-            <label for="search-roll">Find by roll no.</label>
-            <input type="number" id="search-roll" placeholder="Roll no.">
-          </div>
-          <button class="btn btn-ghost" id="search-btn" type="button">Search (hash map)</button>
-          <button class="btn btn-ghost" id="clear-search-btn" type="button">Clear</button>
-        </div>
+        <h2 class="section-title">All Students <small>TOTAL: <span id="roster-count">0</span></small></h2>
         <div id="register-table-wrap"></div>
       </div>
     </div>
 
-    <!-- ROLL CALL -->
-    <div class="panel" id="panel-rollcall">
+    <!-- SEARCH MODULE -->
+    <div class="panel" id="panel-search">
       <div class="card">
-        <h2 class="section-title">Today's Roll Call <small>ONE PASS THROUGH THE LIST</small></h2>
-        <p class="code-note">Mark each student, then submit once. Every submission adds 1 to their total classes.</p>
-        <div id="rollcall-list"></div>
-        <button class="btn btn-gold" id="submit-rollcall-btn" type="button" style="margin-top:16px;">Submit today's attendance</button>
-      </div>
-    </div>
-
-    <!-- RANKINGS -->
-    <div class="panel" id="panel-rankings">
-      <div class="card">
-        <h2 class="section-title">Ranked by Attendance % <small>CUSTOM MERGE SORT</small></h2>
-        <div class="sort-controls">
-          <button class="btn active" data-sort="desc" type="button">High → Low</button>
-          <button class="btn" data-sort="asc" type="button">Low → High</button>
+        <h2 class="section-title">🔍 Search Students</h2>
+        <div class="alert-box">
+          ⚠️ Both Roll Number AND Registration Number are required for search
         </div>
-        <div id="rankings-table-wrap"></div>
+        
+        <div class="field-row">
+          <div class="field">
+            <label for="adv-search-roll">Roll Number <span class="required">*</span></label>
+            <input type="number" id="adv-search-roll" placeholder="e.g. 5" required>
+          </div>
+          <div class="field">
+            <label for="adv-search-regid">Registration Number (6 digits) <span class="required">*</span></label>
+            <input type="text" id="adv-search-regid" placeholder="e.g. 124126" maxlength="6" required>
+          </div>
+          <div class="field" style="display:flex; align-items:flex-end; gap:8px;">
+            <button class="btn btn-gold" id="adv-search-btn" type="button">🔍 Search</button>
+            <button class="btn btn-ghost" id="adv-clear-btn" type="button">Clear</button>
+          </div>
+        </div>
+        <div class="helper-text">Both fields must be filled and must match the same student record.</div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Search Results <small id="search-result-count">0 FOUND</small></h2>
+        <div id="search-results-wrap"></div>
       </div>
     </div>
 
-    <!-- DEFAULTERS -->
-    <div class="panel" id="panel-defaulters">
+    <!-- TAKE ATTENDANCE -->
+    <div class="panel" id="panel-attendance">
       <div class="card">
-        <h2 class="section-title">Below 75% <small>LINEAR SCAN + FILTER</small></h2>
-        <div id="defaulters-table-wrap"></div>
+        <div class="date-picker-wrap">
+          <div class="field" style="max-width:220px;">
+            <label for="attendance-date">Attendance Date</label>
+            <input type="date" id="attendance-date">
+          </div>
+          <button class="btn btn-ghost" id="set-today-btn" type="button">Set Today</button>
+          <div style="flex:1; text-align:right;">
+            <span class="stats-badge total" id="attendance-date-display">Select Date</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Mark Attendance</h2>
+        <div id="attendance-list"></div>
+        <button class="btn btn-gold" id="submit-attendance-btn" type="button" style="margin-top:16px;">Submit Attendance</button>
       </div>
     </div>
 
-    <!-- DATA -->
-    <div class="panel" id="panel-data">
+    <!-- RANKING -->
+    <div class="panel" id="panel-ranking">
       <div class="card">
-        <h2 class="section-title">Backup &amp; Restore <small>NO BROWSER STORAGE USED</small></h2>
-        <p class="code-note">This page keeps everything in memory only, same as the C++ program keeps records in RAM until it saves to a file. Use these buttons to move data in and out as a .json file, the web equivalent of the program's attendance_data.txt.</p>
+        <h2 class="section-title">Student Rankings</h2>
+        <div class="sort-controls">
+          <label style="margin:0; text-transform:none; font-family:'Inter',sans-serif; font-size:13px; color:var(--purple); font-weight:600;">Sort By:</label>
+          <button class="btn active" data-sort="attendance-desc" type="button">Attendance % ↓</button>
+          <button class="btn" data-sort="attendance-asc" type="button">Attendance % ↑</button>
+          <button class="btn" data-sort="name-asc" type="button">Name A-Z</button>
+          <button class="btn" data-sort="name-desc" type="button">Name Z-A</button>
+          <button class="btn" data-sort="roll-asc" type="button">Roll ↑</button>
+          <button class="btn" data-sort="roll-desc" type="button">Roll ↓</button>
+        </div>
+        <div id="ranking-table-wrap"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="panel" id="panel-history">
+      <div class="card">
+        <div class="date-picker-wrap">
+          <div class="field" style="max-width:220px;">
+            <label for="history-start-date">From Date</label>
+            <input type="date" id="history-start-date">
+          </div>
+          <div class="field" style="max-width:220px;">
+            <label for="history-end-date">To Date</label>
+            <input type="date" id="history-end-date">
+          </div>
+          <button class="btn btn-ghost" id="history-30days-btn" type="button">Last 30 Days</button>
+          <button class="btn btn-ghost" id="history-all-btn" type="button">Show All</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Attendance History <small id="history-count-display">SHOWING ALL</small></h2>
+        <div id="history-list-wrap"></div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="panel" id="panel-report">
+      <div class="card">
+        <h2 class="section-title">Class Summary</h2>
+        <div id="report-summary-wrap"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Students Below 75%</h2>
+        <div id="report-defaulters-wrap"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Backup &amp; Restore</h2>
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
-          <button class="btn btn-gold" id="export-btn" type="button">Download register (.json)</button>
+          <button class="btn btn-gold" id="export-btn" type="button">Download report (.json)</button>
           <label class="btn btn-ghost" style="cursor:pointer;">
-            Load register (.json)
+            Load report (.json)
             <input type="file" id="import-input" accept="application/json" style="display:none;">
           </label>
         </div>
       </div>
     </div>
 
-    <!-- SOURCE -->
-    <div class="panel" id="panel-source">
-      <div class="card">
-        <h2 class="section-title" id="source">The DSA Underneath <small>C++ ⇄ JS, SAME LOGIC</small></h2>
-        <div class="dsa-grid">
-          <div class="dsa-card"><h3>Linked List</h3><p>Every student is a node with a <span class="mono">next</span> pointer. Enrolling inserts at the head in O(1); deleting relinks neighbours.</p></div>
-          <div class="dsa-card"><h3>Hash Map</h3><p>Roll number → node reference. Search and delete-by-roll run in O(1) instead of scanning the whole list.</p></div>
-          <div class="dsa-card"><h3>Merge Sort</h3><p>Rankings are produced by a hand-written merge sort over attendance percentage, O(n log n), not a built-in sort.</p></div>
-          <div class="dsa-card"><h3>File I/O</h3><p>The C++ version persists to attendance_data.txt. This page mirrors that with an export/import JSON file.</p></div>
-        </div>
-        <p class="code-note">This is the actual C++ this register is based on (download it from the chat as StudentAttendanceSystem.cpp). Below is the merge sort, the core sorting logic, shown here for reference:</p>
-        <pre class="code">void mergeSort(vector&lt;Student*&gt;&amp; arr, int l, int r, bool descending) {
-    if (l &gt;= r) return;
-    int m = l + (r - l) / 2;
-    mergeSort(arr, l, m, descending);
-    mergeSort(arr, m + 1, r, descending);
-    merge(arr, l, m, r, descending);
-}
-
-void merge(vector&lt;Student*&gt;&amp; arr, int l, int m, int r, bool descending) {
-    vector&lt;Student*&gt; left(arr.begin() + l, arr.begin() + m + 1);
-    vector&lt;Student*&gt; right(arr.begin() + m + 1, arr.begin() + r + 1);
-    size_t i = 0, j = 0; int k = l;
-    while (i &lt; left.size() &amp;&amp; j &lt; right.size()) {
-        bool cond = descending
-            ? (left[i]-&gt;percentage() &gt;= right[j]-&gt;percentage())
-            : (left[i]-&gt;percentage() &lt;= right[j]-&gt;percentage());
-        if (cond) arr[k++] = left[i++]; else arr[k++] = right[j++];
-    }
-    while (i &lt; left.size()) arr[k++] = left[i++];
-    while (j &lt; right.size()) arr[k++] = right[j++];
-}</pre>
-        <p class="code-note">And the JavaScript running this page uses the identical structure — a StudentNode class with a next pointer, a Map for O(1) roll lookup, and this same recursive merge sort — so the behaviour you click through above is exactly what the C++ program computes on a real machine.</p>
-      </div>
-    </div>
-
-    <footer class="appfoot">Attendance Register · DSA Edition · Data lives only in this browser tab</footer>
+    <footer class="appfoot">Attendify Pro • Advanced Attendance Management System • Unlimited Capacity</footer>
   </div>
 </div>
 
@@ -458,13 +557,14 @@ void merge(vector&lt;Student*&gt;&amp; arr, int l, int m, int r, bool descending
 
 <script>
 // =====================================================================
-// DSA CORE — mirrors StudentAttendanceSystem.cpp
+// DSA CORE — Enhanced Attendance System
 // =====================================================================
 
 class StudentNode {
-  constructor(roll, name){
+  constructor(roll, name, regId){
     this.roll = roll;
     this.name = name;
+    this.regId = regId;
     this.present = 0;
     this.total = 0;
     this.next = null;
@@ -477,21 +577,83 @@ class StudentNode {
 
 class AttendanceSystem {
   constructor(){
-    this.head = null;              // linked list head
-    this.rollIndex = new Map();    // hash map: roll -> node
+    this.head = null;
+    this.rollIndex = new Map();
+    this.regIdIndex = new Map();
+    this.history = [];
+    this.nextRoll = 1;
   }
 
-  addStudent(roll, name){
-    if (this.rollIndex.has(roll)) return { ok:false, msg:`Roll ${roll} already exists.` };
-    const node = new StudentNode(roll, name);
-    node.next = this.head;         // insert at head, O(1)
-    this.head = node;
+  addStudent(name, regId){
+    // Validate 6-digit registration number
+    if (!/^\d{6}$/.test(regId)) {
+      return { ok:false, msg:'Registration number must be exactly 6 digits.' };
+    }
+    
+    if (this.regIdIndex.has(regId)){
+      return { ok:false, msg:`Registration number ${regId} already exists.` };
+    }
+    
+    const roll = this.nextRoll++;
+    const node = new StudentNode(roll, name, regId);
+    
+    // Insert in sorted order by roll number (1 to n)
+    if (!this.head || this.head.roll > roll) {
+      node.next = this.head;
+      this.head = node;
+    } else {
+      let curr = this.head;
+      while (curr.next && curr.next.roll < roll) {
+        curr = curr.next;
+      }
+      node.next = curr.next;
+      curr.next = node;
+    }
+    
     this.rollIndex.set(roll, node);
-    return { ok:true, msg:`${name} (Roll ${roll}) added.` };
+    this.regIdIndex.set(regId, node);
+    return { ok:true, msg:`${name} (Roll ${roll}) added with Reg No. ${regId}.`, roll };
   }
 
-  searchStudent(roll){              // O(1) via hash map
+  searchStudent(roll){
     return this.rollIndex.get(roll) || null;
+  }
+
+  searchByRegId(regId){
+    return this.regIdIndex.get(regId) || null;
+  }
+
+  // Strict search - BOTH roll and regId must be provided AND must match
+  strictSearch(roll, regId){
+    // Both parameters are required
+    if (!roll || !regId) {
+      return { success: false, student: null, message: 'Both Roll Number and Registration Number are required.' };
+    }
+
+    // Validate 6-digit registration number
+    if (!/^\d{6}$/.test(regId)) {
+      return { success: false, student: null, message: 'Registration number must be exactly 6 digits.' };
+    }
+
+    // Search by roll number
+    const studentByRoll = this.searchStudent(roll);
+    
+    // If student not found by roll
+    if (!studentByRoll) {
+      return { success: false, student: null, message: `No student found with Roll Number ${roll}.` };
+    }
+
+    // Check if the registration number matches
+    if (studentByRoll.regId !== regId) {
+      return { 
+        success: false, 
+        student: null, 
+        message: `Roll Number ${roll} does not match Registration Number ${regId}. Please check both values.` 
+      };
+    }
+
+    // Both match - return success
+    return { success: true, student: studentByRoll, message: 'Student found successfully!' };
   }
 
   deleteStudent(roll){
@@ -501,85 +663,181 @@ class AttendanceSystem {
     if (!curr) return { ok:false, msg:'Not found.' };
     if (!prev) this.head = curr.next; else prev.next = curr.next;
     this.rollIndex.delete(roll);
+    this.regIdIndex.delete(curr.regId);
     return { ok:true, msg:`${curr.name} (Roll ${roll}) deleted.` };
   }
 
-  toArray(){                        // traverse linked list -> array
+  toArray(){
     const out = [];
     let curr = this.head;
     while (curr){ out.push(curr); curr = curr.next; }
     return out;
   }
 
-  // ---- custom merge sort by attendance percentage ----
-  sortedByPercentage(descending){
+  getStudentCount(){
+    return this.rollIndex.size;
+  }
+
+  // Enhanced sorting with multiple criteria
+  sortStudents(sortBy){
     const arr = this.toArray();
+    
+    const compareFunctions = {
+      'attendance-desc': (a, b) => b.percentage - a.percentage,
+      'attendance-asc': (a, b) => a.percentage - b.percentage,
+      'name-asc': (a, b) => a.name.localeCompare(b.name),
+      'name-desc': (a, b) => b.name.localeCompare(a.name),
+      'roll-asc': (a, b) => a.roll - b.roll,
+      'roll-desc': (a, b) => b.roll - a.roll
+    };
+
+    const compareFunc = compareFunctions[sortBy] || compareFunctions['attendance-desc'];
+
+    // Using merge sort
     const merge = (left, right) => {
       const res = [];
       let i = 0, j = 0;
       while (i < left.length && j < right.length){
-        const cond = descending ? left[i].percentage >= right[j].percentage
-                                 : left[i].percentage <= right[j].percentage;
-        res.push(cond ? left[i++] : right[j++]);
+        res.push(compareFunc(left[i], right[j]) <= 0 ? left[i++] : right[j++]);
       }
       return res.concat(left.slice(i)).concat(right.slice(j));
     };
+    
     const mergeSort = (list) => {
       if (list.length <= 1) return list;
       const mid = Math.floor(list.length / 2);
       return merge(mergeSort(list.slice(0, mid)), mergeSort(list.slice(mid)));
     };
+    
     return mergeSort(arr);
   }
 
   defaulters(threshold = 75){
     return this.toArray().filter(s => s.total > 0 && s.percentage < threshold);
   }
+
+  // Filter history by date range
+  getHistoryByDateRange(startDate, endDate){
+    if(!startDate && !endDate) return this.history;
+    
+    return this.history.filter(session => {
+      const sessionDate = new Date(session.dateObj);
+      if(startDate && sessionDate < new Date(startDate)) return false;
+      if(endDate){
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59);
+        if(sessionDate > end) return false;
+      }
+      return true;
+    });
+  }
 }
 
 const system = new AttendanceSystem();
 
-// seed with a small sample class so the register isn't empty on first load
-[[1,'Ananya Rao'], [2,'Vikram Iyer'], [3,'Fatima Sheikh'], [4,'Rohan Das']].forEach(([r,n]) => system.addStudent(r, n));
-system.searchStudent(1).total = 10; system.searchStudent(1).present = 9;
-system.searchStudent(2).total = 10; system.searchStudent(2).present = 6;
-system.searchStudent(3).total = 10; system.searchStudent(3).present = 10;
-system.searchStudent(4).total = 10; system.searchStudent(4).present = 5;
+// Seed with 20 students (6-digit registration numbers)
+const sampleStudents = [
+  ['Ananya Rao', '124126'],
+  ['Vikram Iyer', '124127'],
+  ['Fatima Sheikh', '124128'],
+  ['Rohan Das', '124129'],
+  ['Priya Sharma', '124130'],
+  ['Arjun Patel', '124131'],
+  ['Kavya Nair', '124132'],
+  ['Aditya Kumar', '124133'],
+  ['Sneha Reddy', '124134'],
+  ['Karthik Menon', '124135'],
+  ['Ishaan Singh', '124136'],
+  ['Meera Joshi', '124137'],
+  ['Rahul Gupta', '124138'],
+  ['Diya Verma', '124139'],
+  ['Siddharth Bose', '124140'],
+  ['Anjali Desai', '124141'],
+  ['Nikhil Rao', '124142'],
+  ['Tanvi Pillai', '124143'],
+  ['Aarav Kapoor', '124144'],
+  ['Zara Khan', '124145']
+];
+
+sampleStudents.forEach(([name, regId]) => {
+  const res = system.addStudent(name, regId);
+  if(res.ok){
+    const student = system.searchStudent(res.roll);
+    // Randomize attendance for demonstration
+    student.total = Math.floor(Math.random() * 15) + 5;
+    student.present = Math.floor(Math.random() * (student.total + 1));
+  }
+});
+
+// Add some sample history entries
+const today = new Date();
+for(let i = 0; i < 10; i++){
+  const sessionDate = new Date(today);
+  sessionDate.setDate(sessionDate.getDate() - i);
+  
+  const records = system.toArray().map(s => ({
+    roll: s.roll,
+    name: s.name,
+    regId: s.regId,
+    present: Math.random() > 0.3 // 70% attendance rate
+  }));
+
+  system.history.push({
+    date: sessionDate.toLocaleDateString(),
+    time: '09:00 AM',
+    dateObj: sessionDate.toISOString(),
+    records
+  });
+}
 
 // =====================================================================
 // UI WIRING
 // =====================================================================
 
-let currentSort = 'desc';
-let searchFilterRoll = null;
+let currentSort = 'attendance-desc';
+let searchResults = null;
+let historyDateFilter = { start: null, end: null };
 
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+  toast._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-function pctClass(p){ return p >= 75 ? 'ok' : 'warn'; }
+function pctClass(p){
+  if(p === 100) return 'excellent';
+  return p >= 75 ? 'ok' : 'warn';
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatDate(dateStr){
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
 
 function renderRegisterTable(){
   const wrap = document.getElementById('register-table-wrap');
-  let list = system.toArray();
-  if (searchFilterRoll !== null){
-    list = list.filter(s => s.roll === searchFilterRoll);
-  }
+  const list = system.toArray();
+  document.getElementById('roster-count').textContent = list.length;
+  
   if (list.length === 0){
-    wrap.innerHTML = `<div class="empty-note">${searchFilterRoll !== null ? 'No student found with that roll number.' : 'No students enrolled yet. Add one above.'}</div>`;
+    wrap.innerHTML = `<div class="empty-note">No students enrolled yet. Add students using the form above.</div>`;
     return;
   }
+  
   wrap.innerHTML = `
     <table>
-      <thead><tr><th>Roll</th><th>Name</th><th>Present</th><th>Total</th><th>%</th><th></th></tr></thead>
+      <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present</th><th>Total</th><th>%</th><th></th></tr></thead>
       <tbody>
         ${list.map(s => `
           <tr>
             <td class="mono">${s.roll}</td>
+            <td class="mono">${escapeHtml(s.regId)}</td>
             <td>${escapeHtml(s.name)}</td>
             <td class="mono">${s.present}</td>
             <td class="mono">${s.total}</td>
@@ -598,8 +856,36 @@ function renderRegisterTable(){
   });
 }
 
-function renderRollcall(){
-  const wrap = document.getElementById('rollcall-list');
+function renderSearchResults(){
+  const wrap = document.getElementById('search-results-wrap');
+  const list = searchResults || [];
+  
+  document.getElementById('search-result-count').textContent = `${list.length} FOUND`;
+  
+  if (list.length === 0){
+    wrap.innerHTML = `<div class="empty-note">No search performed yet. Enter both Roll Number and Registration Number above.</div>`;
+    return;
+  }
+  
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present</th><th>Total</th><th>%</th></tr></thead>
+      <tbody>
+        ${list.map(s => `
+          <tr class="highlight-row">
+            <td class="mono">${s.roll}</td>
+            <td class="mono">${escapeHtml(s.regId)}</td>
+            <td>${escapeHtml(s.name)}</td>
+            <td class="mono">${s.present}</td>
+            <td class="mono">${s.total}</td>
+            <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderAttendance(){
+  const wrap = document.getElementById('attendance-list');
   const list = system.toArray();
   if (list.length === 0){
     wrap.innerHTML = `<div class="empty-note">No students to call. Enroll students in the Register tab first.</div>`;
@@ -607,7 +893,11 @@ function renderRollcall(){
   }
   wrap.innerHTML = list.map(s => `
     <div class="rollcall-row" data-roll="${s.roll}">
-      <div class="rollcall-name"><span class="roll mono">#${s.roll}</span>${escapeHtml(s.name)}</div>
+      <div class="rollcall-name">
+        <span class="roll mono">#${s.roll}</span>
+        ${escapeHtml(s.name)}
+        <span class="mono" style="color:var(--ink-muted); font-size:11px; margin-left:8px;">(${escapeHtml(s.regId)})</span>
+      </div>
       <div class="toggle-group">
         <button class="toggle present active" data-state="present" type="button">Present</button>
         <button class="toggle absent" data-state="absent" type="button">Absent</button>
@@ -625,9 +915,17 @@ function renderRollcall(){
   });
 }
 
-function submitRollcall(){
-  const rows = document.querySelectorAll('#rollcall-list .rollcall-row');
+function submitAttendance(){
+  const dateInput = document.getElementById('attendance-date');
+  if(!dateInput.value){
+    toast('Please select an attendance date first.');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#attendance-list .rollcall-row');
   if (rows.length === 0) return;
+  
+  const records = [];
   rows.forEach(row => {
     const roll = Number(row.getAttribute('data-roll'));
     const student = system.searchStudent(roll);
@@ -635,74 +933,153 @@ function submitRollcall(){
     const isPresent = row.querySelector('.toggle.present').classList.contains('active');
     student.total += 1;
     if (isPresent) student.present += 1;
+    records.push({ roll, name: student.name, regId: student.regId, present: isPresent });
   });
-  toast('Attendance submitted for today.');
+  
+  const selectedDate = new Date(dateInput.value);
+  const now = new Date();
+  
+  system.history.unshift({
+    date: selectedDate.toLocaleDateString(),
+    time: now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }),
+    dateObj: selectedDate.toISOString(),
+    records
+  });
+  
+  toast(`Attendance for ${selectedDate.toLocaleDateString()} submitted and logged.`);
+  
+  // Reset all to present for next entry
+  document.querySelectorAll('.rollcall-row').forEach(row => {
+    row.querySelectorAll('.toggle').forEach(t => t.classList.remove('active'));
+    row.querySelector('.toggle.present').classList.add('active');
+  });
+  
   renderAll();
 }
 
-function renderRankings(){
-  const wrap = document.getElementById('rankings-table-wrap');
-  const list = system.sortedByPercentage(currentSort === 'desc');
+function renderRanking(){
+  const wrap = document.getElementById('ranking-table-wrap');
+  const list = system.sortStudents(currentSort);
+  
   if (list.length === 0){
     wrap.innerHTML = `<div class="empty-note">No students to rank yet.</div>`;
     return;
   }
+  
   wrap.innerHTML = `
     <table>
-      <thead><tr><th>Rank</th><th>Roll</th><th>Name</th><th>%</th></tr></thead>
+      <thead><tr><th>Rank</th><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present/Total</th><th>%</th></tr></thead>
       <tbody>
         ${list.map((s,i) => `
           <tr>
             <td class="mono">${i+1}</td>
             <td class="mono">${s.roll}</td>
+            <td class="mono">${escapeHtml(s.regId)}</td>
             <td>${escapeHtml(s.name)}</td>
+            <td class="mono">${s.present}/${s.total}</td>
             <td class="mono pct ${pctClass(s.percentage)}">${s.percentage.toFixed(1)}%</td>
           </tr>`).join('')}
       </tbody>
     </table>`;
 }
 
-function renderDefaulters(){
-  const wrap = document.getElementById('defaulters-table-wrap');
-  const list = system.defaulters(75);
-  if (list.length === 0){
-    wrap.innerHTML = `<div class="empty-note">No defaulters — everyone is at or above 75%.</div>`;
+function renderHistory(){
+  const wrap = document.getElementById('history-list-wrap');
+  const filteredHistory = system.getHistoryByDateRange(historyDateFilter.start, historyDateFilter.end);
+  
+  // Update display
+  if(historyDateFilter.start || historyDateFilter.end){
+    const startStr = historyDateFilter.start ? formatDate(historyDateFilter.start) : 'Beginning';
+    const endStr = historyDateFilter.end ? formatDate(historyDateFilter.end) : 'Today';
+    document.getElementById('history-count-display').textContent = `${startStr} TO ${endStr} (${filteredHistory.length})`;
+  } else {
+    document.getElementById('history-count-display').textContent = `ALL RECORDS (${filteredHistory.length})`;
+  }
+  
+  if (filteredHistory.length === 0){
+    wrap.innerHTML = `<div class="empty-note">No attendance records found for the selected date range.</div>`;
     return;
   }
-  wrap.innerHTML = `
-    <table>
-      <thead><tr><th>Roll</th><th>Name</th><th>%</th></tr></thead>
-      <tbody>
-        ${list.map(s => `
-          <tr>
-            <td class="mono">${s.roll}</td>
-            <td>${escapeHtml(s.name)}</td>
-            <td class="mono pct warn">${s.percentage.toFixed(1)}%</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>`;
+  
+  wrap.innerHTML = filteredHistory.map(session => {
+    const presentCount = session.records.filter(r => r.present).length;
+    const absentCount = session.records.length - presentCount;
+    const names = session.records.map(r =>
+      `<span class="hist-name ${r.present ? 'present' : 'absent'}">#${r.roll} ${escapeHtml(r.name)} — ${r.present ? '✓' : '✗'}</span>`
+    ).join('');
+    return `
+      <div class="history-entry">
+        <div class="hist-head">
+          <div><strong>${session.date}</strong> <span class="mono" style="color:var(--ink-muted); font-size:12px;">${session.time}</span></div>
+          <div style="display:flex; gap:8px;">
+            <span class="pct ok">${presentCount} present</span>
+            <span class="pct warn">${absentCount} absent</span>
+          </div>
+        </div>
+        <div>${names}</div>
+      </div>`;
+  }).join('');
 }
 
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function renderReport(){
+  const summaryWrap = document.getElementById('report-summary-wrap');
+  const list = system.toArray();
+  const withRecords = list.filter(s => s.total > 0);
+  const avg = withRecords.length ? (withRecords.reduce((sum,s) => sum + s.percentage, 0) / withRecords.length) : 0;
+  const defaulters = system.defaulters(75);
+  const best = withRecords.slice().sort((a,b) => b.percentage - a.percentage)[0];
+  const perfect = withRecords.filter(s => s.percentage === 100).length;
+
+  summaryWrap.innerHTML = `
+    <div class="dsa-grid">
+      <div class="dsa-card"><h3>Total Students</h3><p style="font-size:22px; font-weight:700; color:var(--purple);">${list.length}</p></div>
+      <div class="dsa-card"><h3>Class Average</h3><p style="font-size:22px; font-weight:700; color:var(--purple);">${avg.toFixed(1)}%</p></div>
+      <div class="dsa-card"><h3>Perfect Attendance</h3><p style="font-size:22px; font-weight:700; color:var(--green);">${perfect}</p></div>
+      <div class="dsa-card"><h3>Below 75%</h3><p style="font-size:22px; font-weight:700; color:var(--red);">${defaulters.length}</p></div>
+      <div class="dsa-card"><h3>Top Student</h3><p style="font-size:14px; color:var(--ink-muted); margin-top:4px;">${best ? escapeHtml(best.name) + ' — ' + best.percentage.toFixed(1) + '%' : 'No records yet'}</p></div>
+      <div class="dsa-card"><h3>Total Sessions</h3><p style="font-size:22px; font-weight:700; color:var(--purple);">${system.history.length}</p></div>
+    </div>`;
+
+  const defWrap = document.getElementById('report-defaulters-wrap');
+  if (defaulters.length === 0){
+    defWrap.innerHTML = `<div class="empty-note">🎉 No defaulters — everyone is at or above 75%!</div>`;
+  } else {
+    defWrap.innerHTML = `
+      <table>
+        <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present/Total</th><th>%</th></tr></thead>
+        <tbody>
+          ${defaulters.map(s => `
+            <tr>
+              <td class="mono">${s.roll}</td>
+              <td class="mono">${escapeHtml(s.regId)}</td>
+              <td>${escapeHtml(s.name)}</td>
+              <td class="mono">${s.present}/${s.total}</td>
+              <td class="mono pct warn">${s.percentage.toFixed(1)}%</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
 }
 
 function renderAll(){
   renderRegisterTable();
-  renderRollcall();
-  renderRankings();
-  renderDefaulters();
+  renderAttendance();
+  renderRanking();
+  renderHistory();
+  renderReport();
+  if(searchResults !== null) renderSearchResults();
 }
 
 // ---- tabs ----
 const pageMeta = {
-  register:   { title:'Enroll a Student',        sub:'Every student is a node with a next pointer — inserted at the head in O(1).' },
-  rollcall:   { title:"Today's Roll Call",        sub:'One pass through the linked list, marking each student present or absent.' },
-  rankings:   { title:'Ranked by Attendance %',   sub:'A hand-written merge sort orders the class by attendance, O(n log n).' },
-  defaulters: { title:'Below 75%',                sub:'A linear scan filters out anyone under the attendance threshold.' },
-  data:       { title:'Backup & Restore',         sub:'Move the roster in and out of this session as a JSON file.' },
-  source:     { title:'The DSA Underneath',       sub:'The exact data structures and algorithms driving this page.' },
+  register:   { title:'Student Registration', sub:'Add new students to the attendance system. Roll numbers are assigned automatically.' },
+  search:     { title:'🔍 Search Students', sub:'Find students using both Roll Number AND Registration Number (both required).' },
+  attendance: { title:"Mark Attendance", sub:'Select date and mark students as present or absent.' },
+  ranking:    { title:'Student Rankings', sub:'View students sorted by attendance percentage, name, or roll number.' },
+  history:    { title:'Attendance History', sub:'View past attendance records with date range filters.' },
+  report:     { title:'Analytics & Reports', sub:'View class statistics and export/import data.' },
 };
+
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -717,56 +1094,145 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
+// Auto-format registration number input (only digits)
+document.getElementById('in-regid').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+});
+
+document.getElementById('adv-search-regid').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+});
+
 // ---- add student ----
 document.getElementById('add-student-btn').addEventListener('click', () => {
-  const rollInput = document.getElementById('in-roll');
+  const regIdInput = document.getElementById('in-regid');
   const nameInput = document.getElementById('in-name');
-  const roll = Number(rollInput.value);
+  const regId = regIdInput.value.trim();
   const name = nameInput.value.trim();
-  if (!rollInput.value || Number.isNaN(roll)){ toast('Enter a valid roll number.'); return; }
+  
+  if (!regId){ toast('Enter a registration number.'); return; }
   if (!name){ toast('Enter a student name.'); return; }
-  const res = system.addStudent(roll, name);
+  
+  const res = system.addStudent(name, regId);
   toast(res.msg);
-  if (res.ok){ rollInput.value=''; nameInput.value=''; }
+  if (res.ok){ 
+    regIdInput.value=''; 
+    nameInput.value=''; 
+  }
   renderAll();
 });
 
-// ---- search ----
-document.getElementById('search-btn').addEventListener('click', () => {
-  const val = document.getElementById('search-roll').value;
-  if (val === '') { toast('Enter a roll number to search.'); return; }
-  searchFilterRoll = Number(val);
-  renderRegisterTable();
-});
-document.getElementById('clear-search-btn').addEventListener('click', () => {
-  searchFilterRoll = null;
-  document.getElementById('search-roll').value = '';
-  renderRegisterTable();
+// ---- strict search (BOTH roll AND regId required and must match) ----
+document.getElementById('adv-search-btn').addEventListener('click', () => {
+  const rollVal = document.getElementById('adv-search-roll').value;
+  const regIdVal = document.getElementById('adv-search-regid').value.trim();
+  
+  // Perform strict search
+  const result = system.strictSearch(rollVal ? Number(rollVal) : null, regIdVal);
+  
+  if (result.success) {
+    // Student found and both values match
+    searchResults = [result.student];
+    renderSearchResults();
+    toast('✓ ' + result.message);
+  } else {
+    // Either missing values or mismatch
+    searchResults = [];
+    renderSearchResults();
+    toast('✗ ' + result.message);
+  }
 });
 
-// ---- rollcall submit ----
-document.getElementById('submit-rollcall-btn').addEventListener('click', submitRollcall);
+document.getElementById('adv-clear-btn').addEventListener('click', () => {
+  document.getElementById('adv-search-roll').value = '';
+  document.getElementById('adv-search-regid').value = '';
+  searchResults = null;
+  renderSearchResults();
+  toast('Search cleared.');
+});
 
-// ---- rankings sort toggle ----
+// ---- attendance date picker ----
+const attendanceDateInput = document.getElementById('attendance-date');
+attendanceDateInput.value = new Date().toISOString().split('T')[0];
+document.getElementById('attendance-date-display').textContent = new Date().toLocaleDateString();
+
+attendanceDateInput.addEventListener('change', (e) => {
+  const selectedDate = new Date(e.target.value);
+  document.getElementById('attendance-date-display').textContent = selectedDate.toLocaleDateString();
+});
+
+document.getElementById('set-today-btn').addEventListener('click', () => {
+  const today = new Date().toISOString().split('T')[0];
+  attendanceDateInput.value = today;
+  document.getElementById('attendance-date-display').textContent = new Date().toLocaleDateString();
+});
+
+document.getElementById('submit-attendance-btn').addEventListener('click', submitAttendance);
+
+// ---- ranking sort ----
 document.querySelectorAll('.sort-controls .btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if(!btn.dataset.sort) return;
     document.querySelectorAll('.sort-controls .btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentSort = btn.dataset.sort;
-    renderRankings();
+    renderRanking();
   });
 });
 
-// ---- export / import (no localStorage — file based, like the C++ version) ----
+// ---- history date filter ----
+document.getElementById('history-30days-btn').addEventListener('click', () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 30);
+  
+  historyDateFilter.start = start.toISOString().split('T')[0];
+  historyDateFilter.end = end.toISOString().split('T')[0];
+  
+  document.getElementById('history-start-date').value = historyDateFilter.start;
+  document.getElementById('history-end-date').value = historyDateFilter.end;
+  
+  renderHistory();
+});
+
+document.getElementById('history-all-btn').addEventListener('click', () => {
+  historyDateFilter = { start: null, end: null };
+  document.getElementById('history-start-date').value = '';
+  document.getElementById('history-end-date').value = '';
+  renderHistory();
+});
+
+document.getElementById('history-start-date').addEventListener('change', (e) => {
+  historyDateFilter.start = e.target.value;
+  renderHistory();
+});
+
+document.getElementById('history-end-date').addEventListener('change', (e) => {
+  historyDateFilter.end = e.target.value;
+  renderHistory();
+});
+
+// ---- export / import ----
 document.getElementById('export-btn').addEventListener('click', () => {
-  const data = system.toArray().map(s => ({ roll:s.roll, name:s.name, present:s.present, total:s.total }));
+  const data = {
+    students: system.toArray().map(s => ({ 
+      roll: s.roll, 
+      name: s.name, 
+      regId: s.regId, 
+      present: s.present, 
+      total: s.total 
+    })),
+    history: system.history,
+    nextRoll: system.nextRoll
+  };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'attendance_data.json';
+  a.href = url; 
+  a.download = `attendify_report_${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast('Register downloaded as attendance_data.json');
+  toast('Report downloaded successfully!');
 });
 
 document.getElementById('import-input').addEventListener('change', (e) => {
@@ -775,27 +1241,51 @@ document.getElementById('import-input').addEventListener('change', (e) => {
   const reader = new FileReader();
   reader.onload = () => {
     try{
-      const data = JSON.parse(reader.result);
+      const parsed = JSON.parse(reader.result);
+      const studentsData = parsed.students || [];
+      const historyData = parsed.history || [];
+      const nextRoll = parsed.nextRoll || 1;
+      
       system.head = null;
       system.rollIndex = new Map();
-      data.forEach(s => {
-        const res = system.addStudent(s.roll, s.name);
-        if (res.ok){
-          const node = system.searchStudent(s.roll);
-          node.present = s.present || 0;
-          node.total = s.total || 0;
+      system.regIdIndex = new Map();
+      system.nextRoll = nextRoll;
+      
+      // Sort students by roll number before inserting
+      const sortedStudents = studentsData.sort((a, b) => a.roll - b.roll);
+      
+      sortedStudents.forEach(s => {
+        const node = new StudentNode(s.roll, s.name, s.regId);
+        node.present = s.present || 0;
+        node.total = s.total || 0;
+        
+        // Insert at end to maintain order
+        if (!system.head) {
+          system.head = node;
+        } else {
+          let curr = system.head;
+          while (curr.next) {
+            curr = curr.next;
+          }
+          curr.next = node;
         }
+        
+        system.rollIndex.set(s.roll, node);
+        system.regIdIndex.set(s.regId, node);
       });
-      toast('Register loaded from file.');
+      
+      system.history = historyData;
+      toast('Report loaded successfully!');
       renderAll();
     }catch(err){
-      toast('Could not read that file.');
+      toast('Error reading file. Please check format.');
     }
   };
   reader.readAsText(file);
   e.target.value = '';
 });
 
+// Initial render
 renderAll();
 </script>
 </body>
