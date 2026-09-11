@@ -461,7 +461,7 @@
   </div>
   <nav class="tabs" id="app">
     <button class="tab active" data-tab="register"><span class="t-title">Register</span><span class="t-sub">Student Management</span></button>
-    <button class="tab" data-tab="search"><span class="t-title">🔍 Search</span><span class="t-sub">Find Students</span></button>
+    <button class="tab" data-tab="search"><span class="t-title">Search</span><span class="t-sub">Find Students</span></button>
     <button class="tab" data-tab="attendance"><span class="t-title">Take Attendance</span><span class="t-sub">Mark Present/Absent</span></button>
     <button class="tab" data-tab="ranking"><span class="t-title">Ranking</span><span class="t-sub">Sort & View</span></button>
     <button class="tab" data-tab="history"><span class="t-title">History</span><span class="t-sub">Past Records</span></button>
@@ -505,9 +505,9 @@
     <!-- SEARCH MODULE -->
     <div class="panel" id="panel-search">
       <div class="card">
-        <h2 class="section-title">🔍 Search Students</h2>
+        <h2 class="section-title">Search Students</h2>
         <div class="alert-box">
-          ⚠️ Both Roll Number AND Registration Number are required for search
+          Both Roll Number and Registration Number are required for search.
         </div>
         <div class="field-row">
           <div class="field">
@@ -519,7 +519,7 @@
             <input type="text" id="adv-search-regid" placeholder="e.g. 124126" maxlength="6">
           </div>
           <div class="field" style="display:flex; align-items:flex-end; gap:8px;">
-            <button class="btn btn-gold" id="adv-search-btn" type="button">🔍 Search</button>
+            <button class="btn btn-gold" id="adv-search-btn" type="button">Search</button>
             <button class="btn btn-ghost" id="adv-clear-btn" type="button">Clear</button>
           </div>
         </div>
@@ -553,8 +553,8 @@
         <h2 class="section-title">Undo / Redo</h2>
         <div class="undo-redo-bar">
           <span class="ur-label">History</span>
-          <button class="btn btn-undo" id="undo-btn" type="button" disabled>↩ Undo</button>
-          <button class="btn btn-redo" id="redo-btn" type="button" disabled>↪ Redo</button>
+          <button class="btn btn-undo" id="undo-btn" type="button" disabled>Undo</button>
+          <button class="btn btn-redo" id="redo-btn" type="button" disabled>Redo</button>
           <span class="ur-hint" id="ur-hint">No changes made yet</span>
           <span class="stack-counter" id="stack-counter">Undo: 0 &nbsp;|&nbsp; Redo: 0</span>
         </div>
@@ -566,9 +566,9 @@
         <div id="attendance-list"></div>
         <div class="action-bar">
           <button class="btn btn-gold" id="submit-attendance-btn" type="button">Submit Attendance</button>
-          <button class="btn btn-ghost" id="mark-all-present-btn" type="button">✓ All Present</button>
-          <button class="btn btn-ghost" id="mark-all-absent-btn" type="button">✗ All Absent</button>
-          <button class="btn btn-ghost" id="reset-attendance-btn" type="button">↺ Reset</button>
+          <button class="btn btn-ghost" id="mark-all-present-btn" type="button">Mark All Present</button>
+          <button class="btn btn-ghost" id="mark-all-absent-btn" type="button">Mark All Absent</button>
+          <button class="btn btn-ghost" id="reset-attendance-btn" type="button">Reset</button>
         </div>
       </div>
 
@@ -580,12 +580,12 @@
         <h2 class="section-title">Student Rankings</h2>
         <div class="sort-controls">
           <label style="margin:0;text-transform:none;font-family:'Inter',sans-serif;font-size:13px;color:var(--purple);font-weight:600;">Sort By:</label>
-          <button class="btn active" data-sort="attendance-desc" type="button">Attendance % ↓</button>
-          <button class="btn" data-sort="attendance-asc" type="button">Attendance % ↑</button>
+          <button class="btn active" data-sort="attendance-desc" type="button">Attendance % (High to Low)</button>
+          <button class="btn" data-sort="attendance-asc" type="button">Attendance % (Low to High)</button>
           <button class="btn" data-sort="name-asc" type="button">Name A-Z</button>
           <button class="btn" data-sort="name-desc" type="button">Name Z-A</button>
-          <button class="btn" data-sort="roll-asc" type="button">Roll ↑</button>
-          <button class="btn" data-sort="roll-desc" type="button">Roll ↓</button>
+          <button class="btn" data-sort="roll-asc" type="button">Roll (Ascending)</button>
+          <button class="btn" data-sort="roll-desc" type="button">Roll (Descending)</button>
         </div>
         <div id="ranking-table-wrap"></div>
       </div>
@@ -896,8 +896,8 @@ function refreshUndoRedoUI(){
 
   const undoDesc = urManager.peekUndoDesc();
   const redoDesc = urManager.peekRedoDesc();
-  if(undoDesc)      hint.textContent = `↩ Will undo: ${undoDesc}`;
-  else if(redoDesc) hint.textContent = `↪ Will redo: ${redoDesc}`;
+  if(undoDesc)      hint.textContent = `Will undo: ${undoDesc}`;
+  else if(redoDesc) hint.textContent = `Will redo: ${redoDesc}`;
   else              hint.textContent = 'No changes made yet';
 
   counter.innerHTML = `Undo: ${urManager.undoStack.length} &nbsp;|&nbsp; Redo: ${urManager.redoStack.length}`;
@@ -1122,7 +1122,7 @@ function renderHistory(){
     const pCnt = session.records.filter(r=>r.present).length;
     const aCnt = session.records.length - pCnt;
     const names = session.records.map(r=>
-      `<span class="hist-name ${r.present?'present':'absent'}">#${r.roll} ${escapeHtml(r.name)} — ${r.present?'✓':'✗'}</span>`
+      `<span class="hist-name ${r.present?'present':'absent'}">#${r.roll} ${escapeHtml(r.name)} — ${r.present?'Present':'Absent'}</span>`
     ).join('');
     return `
       <div class="history-entry">
@@ -1160,7 +1160,7 @@ function renderReport(){
     </div>`;
 
   const dw = document.getElementById('report-defaulters-wrap');
-  if(!def.length){ dw.innerHTML=`<div class="empty-note">🎉 No defaulters!</div>`; return; }
+  if(!def.length){ dw.innerHTML=`<div class="empty-note">No defaulters.</div>`; return; }
   dw.innerHTML=`
     <table>
       <thead><tr><th>Roll</th><th>Reg No.</th><th>Name</th><th>Present/Total</th><th>%</th></tr></thead>
@@ -1190,7 +1190,7 @@ function renderAll(){
 // =====================================================================
 const pageMeta = {
   register:   { title:'Student Registration',   sub:'Add new students. Roll numbers are assigned automatically.' },
-  search:     { title:'🔍 Search Students',      sub:'Find students using both Roll Number AND Registration Number (both required).' },
+  search:     { title:'Search Students',         sub:'Find students using both Roll Number and Registration Number (both required).' },
   attendance: { title:'Mark Attendance',         sub:'Select a date, mark students, and use Undo / Redo to correct mistakes before submitting.' },
   ranking:    { title:'Student Rankings',        sub:'Sort students by attendance %, name, or roll number.' },
   history:    { title:'Attendance History',      sub:'View past attendance records with date-range filters.' },
@@ -1234,7 +1234,7 @@ document.getElementById('adv-search-btn').addEventListener('click',()=>{
   const result = system.strictSearch(roll ? Number(roll) : null, regId);
   searchResults = result.success ? [result.student] : [];
   renderSearchResults();
-  toast((result.success ? '✓ ' : '✗ ') + result.message);
+  toast(result.message);
 });
 document.getElementById('adv-clear-btn').addEventListener('click',()=>{
   document.getElementById('adv-search-roll').value='';
@@ -1265,7 +1265,7 @@ document.getElementById('undo-btn').addEventListener('click',()=>{
   const result = urManager.undo();
   if(!result){ toast('Nothing to undo.'); return; }
   applyMarksToDOM(result.state);
-  toast(`↩ Undone: ${result.desc}`);
+  toast(`Undone: ${result.desc}`);
 });
 
 // =====================================================================
@@ -1275,7 +1275,7 @@ document.getElementById('redo-btn').addEventListener('click',()=>{
   const result = urManager.redo();
   if(!result){ toast('Nothing to redo.'); return; }
   applyMarksToDOM(result.state);
-  toast(`↪ Redone: ${result.desc}`);
+  toast(`Redone: ${result.desc}`);
 });
 
 // =====================================================================
